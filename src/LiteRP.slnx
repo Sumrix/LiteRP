@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="LiteRP.ConsoleApp/LiteRP.ConsoleApp.csproj" Id="6d12476b-1c5a-41ae-b456-0ddd9a1a9dbb" />
+  <Project Path="LiteRP.Core/LiteRP.Core.csproj" Id="1c1e4016-46aa-4f84-a454-ce29419bf3f2" />
+</Solution>
