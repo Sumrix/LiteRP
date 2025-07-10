@@ -40,10 +40,10 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Restore
-      run: dotnet restore
+      run: dotnet restore src/LiteRP.slnx
 
     - name: Build
-      run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore
+      run: dotnet build src/LiteRP.slnx --configuration ${{ env.CONFIGURATION }} --no-restore
     
     - name: Publish
       run: >
