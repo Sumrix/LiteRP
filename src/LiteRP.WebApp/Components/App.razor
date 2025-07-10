@@ -1,0 +1,40 @@
+﻿@using Microsoft.AspNetCore.Localization
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link rel="stylesheet" href="@Assets["_content/Flowbite/flowbite.min.css"]" />
+    <link rel="stylesheet" href="@Assets["LiteRP.WebApp.styles.css"]" />
+    <link rel="stylesheet" href="@Assets["css/app.min.css"]" />
+    <link rel="stylesheet" href="@Assets["css/inter.css"]" />
+    <ImportMap />
+    <HeadOutlet @rendermode="InteractiveServer" />
+</head>
+
+<body>
+    <Routes @rendermode="InteractiveServer" />
+    <script src="_framework/blazor.web.js"></script>
+    <script src="_content/Flowbite/flowbite.js"></script>
+    <script src="_content/Flowbite/prism.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
+
+@code {
+    [CascadingParameter]
+    public HttpContext? HttpContext { get; set; }
+
+    protected override void OnInitialized()
+    {
+        HttpContext?.Response.Cookies.Append(
+            CookieRequestCultureProvider.DefaultCookieName,
+            CookieRequestCultureProvider.MakeCookieValue(
+                new RequestCulture(
+                    CultureInfo.CurrentCulture,
+                    CultureInfo.CurrentUICulture)));
+    }
+}

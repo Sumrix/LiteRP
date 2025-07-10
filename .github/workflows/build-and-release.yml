@@ -1,0 +1,102 @@
+name: Build and Upload Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. v1.2.3)'
+        required: true
+        default: ''
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  CONFIGURATION: 'Release'
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+          - os: ubuntu-latest
+            rid: linux-x64
+          - os: macos-latest
+            rid: osx-x64
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore
+    
+    - name: Publish
+      run: >
+        dotnet publish src/LiteRP.WebApp/LiteRP.WebApp.csproj
+        -c ${{ env.CONFIGURATION }}
+        -r ${{ matrix.rid }}
+        -o ./publish
+        -p:PublishSingleFile=true
+        -p:PublishTrimmed=true
+        -p:SelfContained=true
+        
+    - name: Compress artefact
+      run: 7z a LiteRP-${{ matrix.rid }}.zip ./publish/*
+    
+    - name: Upload artefact
+      uses: actions/upload-artifact@v4
+      with:
+        name: binaries-${{ matrix.rid }}
+        path: LiteRP-${{ matrix.rid }}.zip
+  
+  release:
+    name: Draft GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Calculate tag / version
+        id: vars
+        shell: bash
+        run: |
+          if [[ -n "${{ github.event.inputs.version }}" ]]; then
+            TAG="${{ github.event.inputs.version }}"
+          else
+            TAG="${GITHUB_REF##*/}"
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=${TAG#v}" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog (conventional-commits)
+        uses: orhun/git-cliff-action@v2
+        with:
+          args: -t ${{ steps.vars.outputs.version }} -o CHANGELOG.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.vars.outputs.tag }}
+          name: "LiteRP ${{ steps.vars.outputs.version }}"
+          draft: false
+          prerelease: false
+          body_path: CHANGELOG.md
+          files: artifacts/*/*.zip

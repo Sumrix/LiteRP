@@ -1,0 +1,10 @@
+﻿@inherits FlowbiteComponentBase
+
+<div class="@CombineClasses("flex-grow overflow-y-auto px-1")" style="scrollbar-gutter: stable both-edges">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

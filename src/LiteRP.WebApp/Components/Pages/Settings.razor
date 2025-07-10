@@ -1,0 +1,53 @@
+﻿@page "/settings"
+@inject ISettingsService SettingsService
+@inject IToastService ToastService
+
+<PageTitle>LiteRP - Settings</PageTitle>
+
+<div class="max-w-2xl mx-auto lg:py-16">
+
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Settings</h1>
+
+    <div class="p-6 bg-white dark:bg-gray-900 rounded-lg">
+        
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Ollama Connection</h2>
+        <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">Configure the connection settings to your Ollama instance.</p>
+        
+        <form class="flex flex-col gap-6" method="post" @onsubmit="SaveSettings" @formname="settings-form">
+            <div>
+                <div class="mb-2 block">
+                    <Label For="url" Value="URL" />
+                </div>
+                <TextInput TValue="string" Id="url" Type="text" Placeholder="http://localhost:11434" Required
+                           @bind-Value="@AppSettings.OllamaUrl" />
+            </div>
+            <div>
+                <div class="mb-2 block">
+                    <Label For="model" Value="Model Name" />
+                </div>
+                <TextInput TValue="string" Id="model" Type="text" Required
+                           @bind-Value="@AppSettings.ModelName" />
+            </div>
+            <div class="flex justify-end">
+                <Button Type="submit" class="w-full sm:w-auto">Save Settings</Button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@code
+{
+    [SupplyParameterFromForm]
+    private AppSettings AppSettings { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        AppSettings = await SettingsService.GetSettingsAsync();
+    }
+
+    private void SaveSettings()
+    {
+        SettingsService.SaveSettingsAsync(AppSettings);
+        ToastService.ShowSuccess("Settings saved successfully!");
+    }
+}

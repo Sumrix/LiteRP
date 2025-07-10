@@ -1,0 +1,39 @@
+﻿@inherits FlowbiteComponentBase
+
+<ul class="@CombinedClasses">
+    @if (!string.IsNullOrWhiteSpace(Title))
+    {
+        <li>
+            <span class="px-2 pb-2 flex items-center text-sm font-semibold text-gray-500 uppercase dark:text-gray-400">
+                @Title
+            </span>
+        </li>
+    }
+
+    @ChildContent
+</ul>
+
+@code {
+    /// <summary>
+    /// The content of the group (e.g., SidenavItem or SidenavChatItem components).
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// An optional title to display at the top of the group in uppercase.
+    /// </summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    /// <summary>
+    /// If true, adds a top border and margin, creating a visual separation from the previous group.
+    /// </summary>
+    [Parameter]
+    public bool IsTopBordered { get; set; }
+
+    private string CombinedClasses => CombineClasses(
+        "space-y-2",
+        IsTopBordered ? "mt-4 pt-4 border-t border-gray-200 dark:border-gray-700" : null
+    );
+}

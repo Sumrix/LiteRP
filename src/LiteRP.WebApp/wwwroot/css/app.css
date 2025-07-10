@@ -1,0 +1,21 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+    height: 100%;
+}
+
+@supports (scrollbar-color: auto) {
+    html {
+        scrollbar-color: oklch(92.8% 0.006 264.531) transparent; /*grey 200*/
+    }
+
+    html.dark {
+        scrollbar-color: oklch(44.6% 0.03 256.802) transparent; /*grey 600*/
+    }
+}
+
+.aspect-2\/3 {
+    aspect-ratio: 2 / 3;
+}

@@ -1,0 +1,13 @@
+﻿@inherits FlowbiteComponentBase
+
+<div class="bg-white dark:bg-gray-800 flex-shrink-0 px-3">
+    <div class="flex justify-center space-x-4 w-full border-t border-gray-200 dark:border-gray-700 pt-2">
+        
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

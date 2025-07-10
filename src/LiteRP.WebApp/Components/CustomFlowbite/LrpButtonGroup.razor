@@ -1,0 +1,7 @@
+﻿@inherits FlowbiteComponentBase
+
+<div @attributes="AdditionalAttributes" class="@GroupClasses" role="group">
+    <CascadingValue Value="this" IsFixed="true">
+        @ChildContent
+    </CascadingValue>
+</div>

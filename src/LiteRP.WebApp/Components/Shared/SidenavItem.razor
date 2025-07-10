@@ -1,0 +1,46 @@
+﻿@inherits FlowbiteComponentBase
+
+<li>
+    <NavLink href="@Href"
+             Match="@Match"
+             class="@ItemClasses"
+             ActiveClass="@ActiveClass">
+        @if (Icon is not null)
+        {
+            <div class="flex-shrink-0 w-6 h-6">
+                <DynamicComponent Type="@Icon.GetType()" Parameters="@(new Dictionary<string, object> { { "Class", IconClasses } })" />
+            </div>
+        }
+        <span class="ml-3 flex-1 whitespace-nowrap">@Text</span>
+    </NavLink>
+</li>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Href { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Text { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The icon to display. It should contain the necessary Tailwind classes for styling,
+    /// e.g., "text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white".
+    /// </summary>
+    [Parameter]
+    public IconBase? Icon { get; set; }
+
+    /// <summary>
+    /// The CSS class to apply when the link is active.
+    /// </summary>
+    [Parameter]
+    public string ActiveClass { get; set; } = "bg-gray-100 dark:bg-gray-700";
+
+    [Parameter]
+    public NavLinkMatch Match { get; set; } = NavLinkMatch.Prefix;
+
+    private const string ItemClasses =
+        "flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group";
+
+    private const string IconClasses =
+        "w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white";
+}

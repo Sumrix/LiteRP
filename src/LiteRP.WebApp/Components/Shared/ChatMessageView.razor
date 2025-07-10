@@ -1,0 +1,24 @@
+﻿<div class="flex space-x-4 rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+    <div class="w-16 h-16 rounded-full object-cover overflow-hidden shrink-0">
+        @if (ChatMessage.Sender.SenderType == SenderType.Ai)
+        {
+            <CharacterAvatar Character="@ChatMessage.Sender.AiCharacter" SizeToken="s" />
+        }
+        else
+        {
+            <img src="img/avatar_placeholder_large.png"/>
+        }
+    </div>
+    
+    <div class="flex flex-col items-start space-y-4 mb-4">
+        <div class="font-bold text-lg text-gray-900 dark:text-white">@ChatMessage.Sender.SenderName</div>
+        <div class="text-gray-800 dark:text-gray-300 whitespace-pre-wrap">
+            @ChatMessage.MessageText
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public required ChatMessageViewModel ChatMessage { get; set; }
+}
