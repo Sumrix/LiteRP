@@ -5,12 +5,6 @@ on:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
       - "v[0-9]+.[0-9]+.[0-9]+-*"
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to release (e.g. v1.2.3)'
-        required: true
-        default: ''
 
 env:
   DOTNET_VERSION: '9.0.x'
@@ -33,6 +27,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Set up .NET
       uses: actions/setup-dotnet@v4
@@ -52,7 +48,7 @@ jobs:
         -r ${{ matrix.rid }}
         -o ./publish
         -p:PublishSingleFile=true
-        -p:PublishTrimmed=true
+        -p:PublishTrimmed=false
         -p:SelfContained=true
         
     - name: Compress artefact
@@ -74,22 +70,10 @@ jobs:
         with:
           path: ./artifacts
 
-      - name: Calculate tag / version
-        id: vars
-        shell: bash
-        run: |
-          if [[ -n "${{ github.event.inputs.version }}" ]]; then
-            TAG="${{ github.event.inputs.version }}"
-          else
-            TAG="${GITHUB_REF##*/}"
-          fi
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "version=${TAG#v}" >> $GITHUB_OUTPUT
-
-      - name: Generate changelog (conventional-commits)
-        uses: orhun/git-cliff-action@v2
-        with:
-          args: -t ${{ steps.vars.outputs.version }} -o CHANGELOG.md
+      # - name: Generate changelog (conventional-commits)
+      #   uses: orhun/git-cliff-action@v2
+      #   with:
+      #     args: -t ${{ steps.vars.outputs.version }} -o CHANGELOG.md
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -98,5 +82,6 @@ jobs:
           name: "LiteRP ${{ steps.vars.outputs.version }}"
           draft: false
           prerelease: false
-          body_path: CHANGELOG.md
+          # body_path: CHANGELOG.md
           files: artifacts/*/*.zip
+          generate_release_notes: true
