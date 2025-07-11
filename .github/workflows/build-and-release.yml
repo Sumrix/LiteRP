@@ -3,7 +3,8 @@ name: Build and Upload Release
 on:
   push:
     tags:
-      - "v[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
+      - "v[0-9]+.[0-9]+.[0-9]+"
 
 env:
   DOTNET_VERSION: '9.0.x'
@@ -74,7 +75,7 @@ jobs:
       - name: Generate changelog
         uses: orhun/git-cliff-action@v2
         with:
-          args: -t ${{ steps.vars.outputs.version }} -o CHANGELOG.md
+          args: -o CHANGELOG.md
           
       - uses: actions/download-artifact@v4
         with:
