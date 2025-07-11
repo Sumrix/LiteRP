@@ -22,10 +22,10 @@ jobs:
         include:
           - os: windows-latest
             rid: win-x64
-          - os: ubuntu-latest
-            rid: linux-x64
-          - os: macos-latest
-            rid: osx-x64
+          # - os: ubuntu-latest
+          #   rid: linux-x64
+          # - os: macos-latest
+          #   rid: osx-x64
 
     steps:
     - name: Checkout code
@@ -73,10 +73,10 @@ jobs:
         with:
           path: ./artifacts
 
-      # - name: Generate changelog (conventional-commits)
-      #   uses: orhun/git-cliff-action@v2
-      #   with:
-      #     args: -t ${{ steps.vars.outputs.version }} -o CHANGELOG.md
+      - name: Generate changelog
+        uses: orhun/git-cliff-action@v2
+        with:
+          args: -t ${{ steps.vars.outputs.version }} -o CHANGELOG.md
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

@@ -1,6 +1,0 @@
-enhancement:
-  - '^feat'
-bug:
-  - '^fix'
-maintenance:
-  - '^chore'
