@@ -5,6 +5,8 @@ on:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
 
+run-name: Release ${{ github.ref_name }}
+
 env:
   DOTNET_VERSION: '9.0.x'
   CONFIGURATION: 'Release'
@@ -74,8 +76,9 @@ jobs:
       - name: Generate changelog
         uses: orhun/git-cliff-action@v2
         with:
-          config: cliff.toml
-          args: -o CHANGELOG.md
+          config: .github/cliff.toml
+        env:
+          OUTPUT: CHANGELOG.md
           
       - uses: actions/download-artifact@v4
         with:
