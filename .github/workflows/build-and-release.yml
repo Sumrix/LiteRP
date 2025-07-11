@@ -85,6 +85,5 @@ jobs:
           name: "LiteRP ${{ steps.vars.outputs.version }}"
           draft: false
           prerelease: false
-          # body_path: CHANGELOG.md
+          body_path: CHANGELOG.md
           files: artifacts/*/*.zip
-          generate_release_notes: true
