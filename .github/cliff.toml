@@ -1,3 +1,6 @@
+# git-cliff ~ configuration file
+# https://git-cliff.org/docs/configuration
+
 [remote.github]
 owner = "Sumrix"
 repo = "LiteRP"
