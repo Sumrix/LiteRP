@@ -8,13 +8,13 @@ body = """
     - {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
         {% if commit.breaking %}[**breaking**] {% endif %}\
         {{ commit.message | upper_first }} - \
-        ([{{ commit.id | truncate(length=7, end="") }}]({{ self::remote_url() }}/commit/{{ commit.id }}))\
+        ([{{ commit.id | truncate(length=7, end="") }}]({{ remote_url() }}/commit/{{ commit.id }}))\
 {% endmacro -%}
 
 {% if version %}\
     {% if previous.version %}\
         ## [{{ version | trim_start_matches(pat="v") }}]\
-          ({{ self::remote_url() }}/compare/{{ previous.version }}..{{ version }}) - {{ timestamp | date(format="%Y-%m-%d") }}
+          ({{ remote_url() }}/compare/{{ previous.version }}..{{ version }}) - {{ timestamp | date(format="%Y-%m-%d") }}
     {% else %}\
         ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
     {% endif %}\
@@ -27,11 +27,11 @@ body = """
     {% for commit in commits
     | filter(attribute="scope")
     | sort(attribute="scope") %}
-        {{ self::print_commit(commit=commit) }}
+        {{ print_commit(commit=commit) }}
     {%- endfor %}
     {% for commit in commits %}
         {%- if not commit.scope -%}
-            {{ self::print_commit(commit=commit) }}
+            {{ print_commit(commit=commit) }}
         {% endif -%}
     {% endfor -%}
 {% endfor -%}
@@ -42,7 +42,7 @@ body = """
 {% for contributor in github.contributors | filter(attribute="is_first_time", value=true) %}
   * @{{ contributor.username }} made their first contribution
     {%- if contributor.pr_number %} in \
-      [#{{ contributor.pr_number }}]({{ self::remote_url() }}/pull/{{ contributor.pr_number }}) \
+      [#{{ contributor.pr_number }}]({{ remote_url() }}/pull/{{ contributor.pr_number }}) \
     {%- endif %}
 {%- endfor -%}
 {%- endif %}
