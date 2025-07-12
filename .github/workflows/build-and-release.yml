@@ -38,6 +38,7 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
         cache: true
+        cache-dependency-path: src/LiteRP.WebApp/packages.lock.json
 
     - name: Restore
       run: dotnet restore src/LiteRP.WebApp/LiteRP.WebApp.csproj --locked-mode
