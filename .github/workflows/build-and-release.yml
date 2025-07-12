@@ -1,11 +1,12 @@
-name: Build and Upload Release
+name: Build and Release
 
 on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
 
-run-name: Build and Upload Release ${{ github.ref_name }}
+run-name: Build & Release ${{ github.ref_name }}
 
 env:
   DOTNET_VERSION: '9.0.x'
@@ -77,7 +78,7 @@ jobs:
         uses: orhun/git-cliff-action@v2
         with:
           config: .github/cliff.toml
-          args: --verbose --latest
+          args: -vv --latest
         env:
           OUTPUT: CHANGELOG.md
           
@@ -88,9 +89,9 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.vars.outputs.tag }}
-          name: "LiteRP ${{ steps.vars.outputs.version }}"
+          tag_name: ${{ github.ref_name }}
+          name: "LiteRP ${{ github.ref_name }}"
           draft: false
-          prerelease: false
+          prerelease: ${{ contains(github.ref, '-') }}
           body_path: CHANGELOG.md
           files: artifacts/*/*.zip
