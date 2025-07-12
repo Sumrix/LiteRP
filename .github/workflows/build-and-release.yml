@@ -81,6 +81,7 @@ jobs:
           args: -vv --latest
         env:
           OUTPUT: CHANGELOG.md
+          GITHUB_REPO: ${{ github.repository }}
           
       - uses: actions/download-artifact@v4
         with:
