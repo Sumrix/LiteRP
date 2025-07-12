@@ -1,4 +1,8 @@
-﻿[changelog]
+﻿[remote.github]
+owner = "Sumrix"
+repo = "LiteRP"
+
+[changelog]
 # A Tera template to be rendered for each release in the changelog.
 # See https://keats.github.io/tera/docs/#introduction
 body = """
