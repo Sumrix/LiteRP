@@ -1,16 +1,16 @@
 # git-cliff ~ configuration file
 # https://git-cliff.org/docs/configuration
 
-[remote.github]
-owner = "Sumrix"
-repo = "LiteRP"
+# [remote.github]
+# owner = "Sumrix"
+# repo = "LiteRP"
 
 [changelog]
 # A Tera template to be rendered for each release in the changelog.
 # See https://keats.github.io/tera/docs/#introduction
 body = """
 {%- macro remote_url() -%}
-  https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}
+  https://github.com/Sumrix/LiteRP
 {%- endmacro -%}
 
 {% macro print_commit(commit) -%}
@@ -65,15 +65,19 @@ postprocessors = [
 # Parse commits according to the conventional commits specification.
 # See https://www.conventionalcommits.org
 conventional_commits = true
+
 # Exclude commits that do not match the conventional commits specification.
 filter_unconventional = true
+
 # Split commits on newlines, treating each line as an individual commit.
 split_commits = false
+
 # An array of regex based parsers to modify commit messages prior to further processing.
 commit_preprocessors = [
   # Replace issue numbers with link templates to be updated in `changelog.postprocessors`.
   { pattern = '\((\w+\s)?#([0-9]+)\)', replace = "([#${2}](<REPO>/issues/${2}))" },
 ]
+
 # An array of regex based parsers for extracting data from the commit message.
 # Assigns commits to groups.
 # Optionally sets the commit's scope and can decide to exclude commits from further processing.
@@ -95,18 +99,27 @@ commit_parsers = [
   { body = ".*security", group = "<!-- 8 -->🛡️ Security" },
   { message = "^revert", group = "<!-- 9 -->◀️ Revert" },
 ]
+
 # Prevent commits that are breaking from being excluded by commit parsers.
 protect_breaking_commits = false
+
 # Exclude commits that are not matched by any commit parser.
 filter_commits = false
+
 # Regex to select git tags that represent releases.
 tag_pattern = "v[0-9].*"
+
 # Regex to select git tags that do not represent proper releases.
 # Takes precedence over `tag_pattern`.
 # Changes belonging to these releases will be included in the next release.
 skip_tags = "beta|alpha"
+
+# Regex to exclude git tags after applying the tag_pattern.
+# ignore_tags = "rc|v2.1.0|v2.1.1"
+
 # Order releases topologically instead of chronologically.
 topo_order = false
+
 # Order of commits in each group/release within the changelog.
 # Allowed values: newest, oldest
 sort_commits = "newest"

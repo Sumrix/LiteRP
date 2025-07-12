@@ -77,8 +77,8 @@ jobs:
       - name: Generate changelog
         uses: orhun/git-cliff-action@v2
         with:
-          config: .github/cliff1.toml
-          args: -vv --latest
+          config: .github/cliff.toml
+          args: --latest
         env:
           OUTPUT: CHANGELOG.md
           GITHUB_REPO: ${{ github.repository }}
