@@ -1,0 +1,35 @@
+﻿@inherits FlowbiteComponentBase
+
+<button type="button"
+        @onclick="OnClick"
+        class="@ButtonClasses"
+        @attributes="AdditionalAttributes">
+    <DynamicComponent Type="@Icon.GetType()" />
+</button>
+
+@code
+{
+    /// <summary>
+    /// The content to be displayed inside the button, typically an SVG icon.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public required IconBase Icon { get; set; }
+
+    /// <summary>
+    /// The callback to be invoked when the button is clicked.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    /// <summary>
+    /// Additional attributes to be applied to the button element.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string ButtonClasses => CombineClasses(
+        "p-2.5 text-gray-600 dark:text-gray-400 rounded-full cursor-pointer",
+        "hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white",
+        "active:bg-gray-200 dark:active:bg-gray-600"
+    );
+}

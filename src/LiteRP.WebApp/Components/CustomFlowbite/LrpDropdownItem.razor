@@ -1,0 +1,16 @@
+﻿@inherits FlowbiteComponentBase
+
+<button type="button"
+        class="@GetItemClasses()"
+        role="menuitem"
+        tabindex="0"
+        @onclick="HandleClick"
+        @onclick:stopPropagation="true"
+        @attributes="AdditionalAttributes"
+        disabled="@Disabled">
+    @if (Icon != null)
+    {
+        <DynamicComponent Type="@Icon" Parameters="@IconParameters" />
+    }
+    @ChildContent
+</button>

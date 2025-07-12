@@ -1,0 +1,10 @@
+﻿@inherits FlowbiteComponentBase
+
+<div class="mb-5 px-3">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

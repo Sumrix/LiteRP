@@ -1,0 +1,130 @@
+﻿@page "/chat/new/{CharacterIdForNewChat:guid}"
+@using LiteRP.Core.Exceptions
+@using Microsoft.Extensions.AI
+@inject IAIChatService AIChatService
+@inject IToastService ToastService
+@inject ICharacterService CharacterService
+@inject ILogger<Chat> Logger
+@inject NavigationManager Nav
+
+<div class="max-w-4xl mx-auto" style="max-width: 90ch;">
+    
+    <div id="chat-container" class="d-flex flex-column flex-grow-1 p-4 space-y-6 pb-32" style="overflow-y: auto;">
+        @foreach (var message in _chatMessageViewModels)
+        {
+            <ChatMessageView ChatMessage="message" />
+        }
+    </div>
+
+    <div class="fixed bottom-6 left-0 right-0
+                     md:left-64
+                     mx-auto max-w-[90ch]
+                      items-end gap-2">
+        <form class="relative">
+            @*field-sizing is not available in some browsers*@
+            <textarea class="block p-2.5 pr-14 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 
+                             dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      @bind="_userInput"
+                      placeholder="Write a message..."
+                      rows="4"
+                      role="textbox"/>
+            <LrpButton Icon="Icons.PaperPlane" OnClick="SendMessage" Class="absolute bottom-2 right-2"/>
+        </form>
+    </div>
+</div>
+
+@code
+{
+    [Parameter, EditorRequired]
+    public Guid CharacterIdForNewChat { get; set; }
+
+    private readonly List<ChatMessage> _chatMessages = new();
+    private readonly List<ChatMessageViewModel> _chatMessageViewModels = new();
+    private string _userInput = String.Empty;
+    private Character _character = null!;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var character = await CharacterService.GetCharacterAsync(CharacterIdForNewChat);
+        if (character == null)
+        {
+            Nav.NavigateTo("/not-found", replace: true);
+        }
+        else
+        {
+            _character = character;
+        }
+    }
+
+    private async Task SendMessage()
+    {
+        if (string.IsNullOrWhiteSpace(_userInput)) return;
+        
+        var userMessage = new ChatMessage(ChatRole.User, _userInput);
+        _chatMessages.Add(userMessage);
+        _chatMessageViewModels.Add(ChatMessageViewModel.FromChatMessage(userMessage, _character));
+
+        var aiResponse = new ChatMessageViewModel
+        {
+            Sender = MessageSender.FromAi(_character),
+            MessageText = ""
+        };
+        _chatMessageViewModels.Add(aiResponse);
+
+        try 
+        {
+            var stream = AIChatService.GetStreamingResponseAsync(_chatMessages);
+
+            await foreach (var chunk in stream)
+            {
+                aiResponse.MessageText += chunk;
+                StateHasChanged();
+            }
+
+            _chatMessages.Add(new(ChatRole.Assistant, aiResponse.MessageText));
+        }
+        catch (AIChatServiceException ex)
+        {
+            var errorMessage = GetUserFriendlyErrorMessage(ex.ErrorCode);
+            Logger.LogError(ex, errorMessage);
+            ToastService.ShowError(errorMessage);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            const string errorMessage = "An unexpected error occurred. Please try again later.";
+            Logger.LogError(ex, errorMessage);
+            ToastService.ShowError(errorMessage);
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+
+    private string GetUserFriendlyErrorMessage(AIChatServiceError code)
+    {
+        return code switch
+        {
+            AIChatServiceError.ConfigurationMissing => "AI settings are not configured. Please go to the settings page to set the Ollama URL and model name.",
+            AIChatServiceError.ConnectionFailed => "Could not connect to the AI server. Please check your settings and ensure the server is running.",
+            AIChatServiceError.ModelNotAvailable => "The selected AI model is not available on the server.",
+            _ => "An unknown error occurred with the AI service."
+        };
+    }
+
+    [Inject] private IJSRuntime JSRuntime { get; set; } = null!;
+    private async Task ScrollToBottom()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("eval", "document.getElementById('chat-container')?.scrollTo(0, document.getElementById('chat-container').scrollHeight)");
+        }
+        catch
+        {
+            // It doesn't really matter if it fails
+        }
+    }
+}

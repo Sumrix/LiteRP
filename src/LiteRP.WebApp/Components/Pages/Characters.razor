@@ -1,0 +1,231 @@
+﻿@page "/characters"
+@using Microsoft.Extensions.Options
+@inject IJSRuntime JS
+@inject ICharacterService CharacterService
+@inject IStringLocalizer<SharedResources> L
+@inject IToastService ToastService
+@inject IOptions<AvatarSettings> AvatarSettings
+@inject IAvatarService AvatarService
+@inject ILorebookService LorebookService
+
+<PageTitle>LiteRP - @L["Characters"]</PageTitle>
+
+
+<header class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
+    <h2 class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">@L["Characters"]</h2>
+
+    <div>
+        <LrpButton @onclick="OpenPicker" Icon="Icons.UploadSolid" Class="w-full md:w-auto">
+            Add New Character
+        </LrpButton>
+
+        <InputFile id="filePicker"
+                   class="sr-only"
+                   OnChange="UploadCharacter"
+                   multiple
+                   accept=".bmp,.gif,.jpeg,.jpg,.pbm,.png,.tiff,.tif,.tga,.webP,.qoi" />
+
+@*         <Tooltip Content="This is a basic tooltip">
+            <Icon1 Type="new InfoCircleIcon()" />
+        </Tooltip> *@
+    </div>
+</header>
+
+@* <div class="mb-3 flex flex-col">
+    <div class="flex flex-col items-center justify-between space-y-3 md:flex-row md:space-y-0 md:space-x-4">
+        <LrpTextInput TValue="string" Icon="new SearchIcon()" Placeholder="Search character..." Class="w-full md:w-1/2" />
+
+        <div class="flex flex-col items-stretch justify-end space-x-4 flex-shrink-0 w-full space-y-2 md:w-auto md:flex-row md:space-y-0 md:items-center md:space-x-3">
+
+            <LrpDropdown>
+                <CustomTrigger>
+                    <LrpButton Variant="LrpButtonStyle.Subtle" Icon="Icons.ArrowSortLetters">Sort by @_sort <ChevronDownIcon Class="w-5 h-5 ml-2" /></LrpButton>
+                </CustomTrigger>
+                <ChildContent>
+                    <LrpDropdownItem OnClick="@(() => _sort = "Name (A-Z)")">Name (A-Z)</LrpDropdownItem>
+                    <LrpDropdownItem OnClick="@(() => _sort = "Name (Z-A)")">Name (Z-A)</LrpDropdownItem>
+                    <LrpDropdownItem OnClick="@(() => _sort = "Date added (Newest)")">Date added (Newest)</LrpDropdownItem>
+                    <LrpDropdownItem OnClick="@(() => _sort = "Date added (Oldest)")">Date added (Oldest)</LrpDropdownItem>
+                </ChildContent>
+            </LrpDropdown>
+
+            <LrpToggleGroup Value="1" UntoggledStyle="LrpButtonStyle.Subtle" ToggledStyle="LrpButtonStyle.SubtleColored">
+                <LrpToggleItem Value="1" Icon="Icons.Grid" />
+                <LrpToggleItem Value="2" Icon="Icons.Blocks" />
+                <LrpToggleItem Value="3" Icon="Icons.List" />
+            </LrpToggleGroup>
+
+        </div>
+    </div>
+</div> *@
+
+<div class="relative" 
+     @ondragenter="HandleDragEnter" 
+     @ondragleave="HandleDragLeave"
+     @ondragover:preventDefault>
+    <InputFile OnChange="UploadCharacter" 
+               multiple 
+               class="@($"absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20 {(_isDragOver ? "pointer-events-auto" : "pointer-events-none")}")" />
+
+    @if (_isDragOver)
+    {
+        <div class="absolute inset-0 flex flex-col items-center justify-center bg-blue-500 bg-opacity-90 border-4 border-dashed border-white rounded-xl z-30 pointer-events-none">
+            <svg class="w-16 h-16 text-white mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-4-4V7a4 4 0 014-4h10a4 4 0 014 4v5a4 4 0 01-4 4h-2m-6-4h.01M11 16l-3-3m0 0l3-3m-3 3h8"></path></svg>
+            <p class="text-2xl font-bold text-white">Drop your character cards here!</p>
+            <p class="text-lg text-blue-100">Supports .json and .png (TavernAI V2)</p>
+        </div>
+    }
+
+    @if (_characters != null)
+    {
+        <div class="relative z-10 grid gap-2 grid-cols-[repeat(auto-fill,minmax(12rem,1fr))]">
+            @foreach (var character in _characters)
+            {
+                <CharacterCard Character="character" OnDelete="ShowDialog" />
+            }
+        </div>
+
+        @if (!_characters.Any())
+        {
+            <div class="col-span-full h-64 flex items-center justify-center text-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+                <p class="text-gray-500 dark:text-gray-400">
+                    No characters yet.<br>
+                    Drag and drop a character card here to get started.
+                </p>
+            </div>
+        }
+    }
+</div>
+
+<Modal Show="showDefaultModal">
+    <ModalHeader><h3>Are you sure?</h3></ModalHeader>
+    <ModalBody>
+        <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+            You are about to delete <b>@_deletingCharacter!.Name</b>, this cannot be undone.
+        </p>
+    </ModalBody>
+    <ModalFooter>
+        <div class="flex justify-end w-full">
+            <LrpButton OnClick="@(() => HideDialog())" Variant="LrpButtonStyle.Subtle" Color="LrpButtonColor.Grey" class="mr-2">No, cancel</LrpButton>
+            <LrpButton OnClick="@(() => DeleteCharacter())" Color="LrpButtonColor.Red">Yes, I'm sure</LrpButton>
+        </div>
+    </ModalFooter>
+</Modal>
+
+
+@code {
+    private List<Character>? _characters = null;
+    // private string _sort = "Name (A-Z)";
+    private bool _isDragOver;
+    private int _dragCounter = 0;
+    private Character? _deletingCharacter = null;
+    private bool showDefaultModal = false;
+
+    private void HandleDragEnter()
+    {
+        _dragCounter++;
+        if (_dragCounter > 0)
+        {
+            _isDragOver = true;
+            StateHasChanged();
+        }
+    }
+
+    private void HandleDragLeave()
+    {
+        _dragCounter--;
+        if (_dragCounter <= 0)
+        {
+            _dragCounter = 0;
+            _isDragOver = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _characters = await CharacterService.GetCharactersAsync();
+    }
+
+    private async Task OpenPicker()
+    {
+        await JS.InvokeVoidAsync("LiteRP.openFileDialog", "filePicker");
+    }
+
+    private async Task UploadCharacter(InputFileChangeEventArgs e)
+    {
+        _dragCounter = 0;
+        _isDragOver = false;
+
+        foreach (var file in e.GetMultipleFiles())
+        {
+            if (file.Size > AvatarSettings.Value.MaxAllowedUploadBytes)
+            {
+                ToastService.ShowError($"File is too large (max {AvatarSettings.Value.MaxAllowedUploadMegabytes} MB)");
+                continue;
+            }
+
+            try
+            {
+                await using var imageStream = file.OpenReadStream(maxAllowedSize: AvatarSettings.Value.MaxAllowedUploadBytes);
+
+                using var memoryStream = new MemoryStream();
+                await imageStream.CopyToAsync(memoryStream);
+
+                // Attempt to parse character data from the image
+                memoryStream.Position = 0;
+                var (parsedCharacter, parsedLorebook) = await CharacterService.ParseTavernAiCardAsync(memoryStream);
+
+                if (parsedCharacter == null)
+                {
+                    ToastService.ShowError($"Couldn't upload {file.Name}, because it not TavernAI V2 character card.");
+                    continue;
+                }
+
+                parsedCharacter.HasAvatar = true;
+                if (parsedLorebook != null)
+                {
+                    parsedCharacter.LorebookId = parsedLorebook.Id;
+                }
+
+                await CharacterService.SaveCharacterAsync(parsedCharacter);
+
+                memoryStream.Position = 0;
+                await AvatarService.SavePermanentAvatarAsync(parsedCharacter.Id, memoryStream);
+
+                _characters!.Add(parsedCharacter);
+
+                if (parsedLorebook != null)
+                {
+                    await LorebookService.SaveLorebookAsync(parsedLorebook);
+                }
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError($"Error processing file: {ex.Message}");
+            }
+            finally
+            {
+                StateHasChanged();
+            }
+        }
+    }
+
+    public void ShowDialog(Character character)
+    {
+        _deletingCharacter = character;
+        showDefaultModal = true;
+    }
+
+    public void HideDialog()
+    {
+        showDefaultModal = false;
+    }
+
+    public async Task DeleteCharacter()
+    {
+        HideDialog();
+        await CharacterService.DeleteCharacterAsync(_deletingCharacter!.Id);
+        
+    }
+}

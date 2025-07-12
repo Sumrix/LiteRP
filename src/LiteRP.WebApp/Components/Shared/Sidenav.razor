@@ -1,0 +1,18 @@
+﻿@inherits OffCanvasComponentBase
+
+@if (IsVisible)
+{
+    <div @onclick="HideAsync" class="bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-30"></div>
+}
+
+<aside id="@Id"
+       class="@SidenavClasses"
+       aria-label="Sidenav"
+       @onkeydown="HandleEscapeKeyAsync"
+       tabindex="-1">
+
+    <div class="overflow-y-auto pt-5 pb-3 h-full flex flex-col">
+        @ChildContent
+    </div>
+
+</aside>

@@ -1,0 +1,111 @@
+name: Build and Upload Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
+
+run-name: Build & Release ${{ github.ref_name }}
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  CONFIGURATION: 'Release'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+          - os: ubuntu-latest
+            rid: linux-x64
+          # - os: macos-latest
+          #   rid: osx-x64
+
+    steps:
+    - name: Parse version
+      id: version
+      shell: bash
+      run: |
+        NUMERIC=$(echo "${{ github.ref_name }}" | sed -E 's/^v//; s/-.*//')
+        SEMVER=$(echo "${{ github.ref_name }}" | sed 's/^v//')
+        echo "numeric=$NUMERIC" >> "$GITHUB_OUTPUT"
+        echo "semver=$SEMVER"   >> "$GITHUB_OUTPUT"
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        cache: true
+        cache-dependency-path: src/LiteRP.WebApp/packages.lock.json
+
+    - name: Cache Tailwind CLI
+      uses: actions/cache@v3
+      with:
+        path: src/LiteRP.WebApp/obj/tailwind-cli
+        key: tailwind-cli-v3.4.17-${{ runner.os }}
+        
+    - name: Publish
+      run: >
+        dotnet publish src/LiteRP.WebApp/LiteRP.WebApp.csproj
+        -c ${{ env.CONFIGURATION }}
+        -r ${{ matrix.rid }}
+        -o ./publish
+        -p:AssemblyVersion=${{ steps.version.outputs.numeric }}
+        -p:Version=${{ steps.version.outputs.semver }}
+        -p:PublishSingleFile=true
+        -p:PublishTrimmed=false
+        -p:SelfContained=true
+        
+    - name: Compress artefact
+      run: 7z a LiteRP-${{ matrix.rid }}.zip ./publish/*
+    
+    - name: Upload artefact
+      uses: actions/upload-artifact@v4
+      with:
+        name: binaries-${{ matrix.rid }}
+        path: LiteRP-${{ matrix.rid }}.zip
+  
+  release:
+    name: Draft GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        uses: orhun/git-cliff-action@v2
+        with:
+          config: .github/cliff.toml
+          args: --latest
+        env:
+          OUTPUT: CHANGELOG.md
+          GITHUB_REPO: ${{ github.repository }}
+          
+      - uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "LiteRP ${{ github.ref_name }}"
+          draft: false
+          prerelease: ${{ contains(github.ref, '-') }}
+          body_path: CHANGELOG.md
+          files: artifacts/*/*.zip
