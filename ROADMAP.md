@@ -11,8 +11,9 @@ Minimum feature set for practical usage
 - [x] Navigation sidebar (Chat • Characters • Settings)
 - [x] Characters page: Import TavernAI v2 `.png` files with quick previews (name + avatar)
 - [ ] Chat using character `Description` in prompts
-- [ ] Character deletion
+- [x] Character deletion
 - [x] Settings page moved to dedicated route
+- [ ] Open browser with app page on server start
 
 ## v0.3 — Ready to use, early beta
 Feature-complete for public testing
@@ -27,6 +28,7 @@ Feature-complete for public testing
   - [ ] Full character information view
   - [ ] Character **archiving**
 - [ ] Compact single executable
+- [ ] Hide server in system tray
 
 ## v0.4 — Polished Beta
 Quality of life improvements
@@ -40,6 +42,7 @@ Quality of life improvements
 - [ ] Right-side "Chat info" drawer (large avatar, context statistics)
 - [ ] Localization support
 - [ ] Reasoning model support
+- [ ] Smart chat auto-scroll
 
 ## v0.5 — Feature-rich beta
 Competitive feature parity with other AI frontends
@@ -49,6 +52,7 @@ Competitive feature parity with other AI frontends
 - [ ] Lorebooks page with editor
 - [ ] Prompts using all character card fields
 - [ ] Smart context management
+- [ ] Display token count in chat
 
 ## v1.0 — Release
 - [ ] Safe deletion workflow (archive browser + one-click purge)

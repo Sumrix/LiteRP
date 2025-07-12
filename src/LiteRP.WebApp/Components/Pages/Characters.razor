@@ -226,6 +226,6 @@
     {
         HideDialog();
         await CharacterService.DeleteCharacterAsync(_deletingCharacter!.Id);
-        
+        _characters!.Remove(_deletingCharacter);
     }
 }
