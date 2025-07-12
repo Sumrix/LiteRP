@@ -40,10 +40,10 @@ jobs:
         cache: true
 
     - name: Restore
-      run: dotnet restore src/LiteRP.slnx --locked-mode
+      run: dotnet restore src/LiteRP.WebApp/LiteRP.WebApp.csproj --locked-mode
 
     - name: Build
-      run: dotnet build src/LiteRP.slnx --configuration ${{ env.CONFIGURATION }} --no-restore
+      run: dotnet build src/LiteRP.WebApp/LiteRP.WebApp.csproj --configuration ${{ env.CONFIGURATION }} --no-restore
     
     - name: Publish
       run: >
