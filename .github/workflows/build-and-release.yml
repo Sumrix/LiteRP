@@ -37,9 +37,10 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
+        cache: true
 
     - name: Restore
-      run: dotnet restore src/LiteRP.slnx
+      run: dotnet restore src/LiteRP.slnx --locked-mode
 
     - name: Build
       run: dotnet build src/LiteRP.slnx --configuration ${{ env.CONFIGURATION }} --no-restore
