@@ -12,7 +12,7 @@
 
     <div class="absolute inset-0 flex flex-col justify-between">
 
-        <div class="flex justify-end">
+        <div class="flex justify-end z-10">
             <LrpDropdown Placement="DropdownPlacement.BottomEnd">
                 <CustomTrigger>
                     <LrpButton Variant="@LrpButtonStyle.Overlay"
@@ -27,12 +27,14 @@
         </div>
 
         <div class="p-3">
-            <a href="/chat/new/@Character.Id" class="text-xl font-bold text-white hover:underline drop-shadow-md">
+            <p href="/chat/new/@Character.Id" class="text-xl font-bold text-white drop-shadow-md">
                 @Character.Name
-            </a>
+            </p>
         </div>
 
     </div>
+
+    <a href="/chat/new/@Character.Id" class="absolute inset-0" aria-label="Chat with @Character.Name"></a>
 </div>
 
 @code
