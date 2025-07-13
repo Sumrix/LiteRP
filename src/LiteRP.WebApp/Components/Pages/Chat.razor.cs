@@ -3,6 +3,7 @@ using LiteRP.Core.Exceptions;
 using LiteRP.Core.Models;
 using LiteRP.WebApp.ViewModels;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 namespace LiteRP.WebApp.Components.Pages;
@@ -33,6 +34,14 @@ public partial class Chat : IDisposable
                 .Where(message => message.Role is ChatRole.Assistant or ChatRole.User)
                 .Select(message => ChatMessageViewModel.FromChatMessage(message, character))
                 .ToList();
+        }
+    }
+    
+    private async Task HandleKey(KeyboardEventArgs e)
+    {
+        if (e is { Key: "Enter", ShiftKey: false })
+        {
+            await SendMessage();
         }
     }
 

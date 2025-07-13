@@ -14,12 +14,12 @@ Minimum feature set for practical usage
 - [x] Character deletion
 - [x] Settings page moved to dedicated route
 - [x] Open browser with app page on server start
+- [x] Send messages using Enter key
 
 ## v0.3 — Ready to use, early beta
 Feature-complete for public testing
 - [ ] Chat sidebar displaying conversation history
 - [ ] **Stop generation** button
-- [ ] Send messages using Enter key
 - [ ] Markdown rendering in chat
 - [ ] Character prompts using: `personality`, `scenario`, `mes_example`
 - [ ] Back-end connection status indicator
@@ -29,6 +29,7 @@ Feature-complete for public testing
   - [ ] Character **archiving**
 - [ ] Compact single executable
 - [ ] Hide server in system tray
+- [ ] Add code signing for release builds
 
 ## v0.4 — Polished Beta
 Quality of life improvements
