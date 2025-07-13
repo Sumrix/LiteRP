@@ -13,7 +13,7 @@ Minimum feature set for practical usage
 - [x] Chat using character `description` and `first_mes` in prompts
 - [x] Character deletion
 - [x] Settings page moved to dedicated route
-- [ ] Open browser with app page on server start
+- [x] Open browser with app page on server start
 
 ## v0.3 — Ready to use, early beta
 Feature-complete for public testing

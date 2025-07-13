@@ -14,17 +14,20 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
-    Log.Information("Starting LiteRP");
-
     var builder = WebApplication.CreateBuilder(args);
+
+    Log.Logger = new LoggerConfiguration()
+        .ReadFrom.Configuration(builder.Configuration)
+        .WriteTo.File(
+            Path.Combine(PathManager.LogsPath, "log-.txt"),
+            rollingInterval: RollingInterval.Day,
+            retainedFileCountLimit: 14,
+            shared: true)
+        .CreateLogger();
+
+    Log.Information("------------Starting LiteRP------------");
     
-    builder.Services.AddSerilog(lc => 
-        lc.ReadFrom.Configuration(builder.Configuration)
-            .WriteTo.File(
-                Path.Combine(PathManager.LogsPath, "log-.txt"),
-                rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 14,
-                shared: true));
+    builder.Services.AddSerilog(Log.Logger);
 
     builder.Services.AddRazorComponents()
         .AddInteractiveServerComponents();
@@ -57,6 +60,11 @@ try
 
     builder.Services.AddLocalization();
 
+    if (builder.Environment.IsProduction())
+    {
+        builder.Services.AddHostedService<BrowserLauncherHostedService>();
+    }
+
     var app = builder.Build();
 
     // Configure the HTTP request pipeline.
@@ -77,6 +85,8 @@ try
     app.MapControllers();
     app.MapRazorComponents<App>()
         .AddInteractiveServerRenderMode();
+    
+    Log.Information("Initialization complete");
 
     await app.RunAsync();
     
