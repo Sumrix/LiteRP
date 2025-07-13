@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.AI;
 
 namespace LiteRP.Core.Models;
 
-public class ChatSession
+public class ChatSessionState
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid CharacterId { get; set; }

@@ -11,11 +11,11 @@
     <link rel="stylesheet" href="@Assets["css/app.min.css"]" />
     <link rel="stylesheet" href="@Assets["css/inter.css"]" />
     <ImportMap />
-    <HeadOutlet @rendermode="InteractiveServer" />
+    <HeadOutlet @rendermode="new InteractiveServerRenderMode(prerender: false)" />
 </head>
 
 <body>
-    <Routes @rendermode="InteractiveServer" />
+    <Routes @rendermode="new InteractiveServerRenderMode(prerender: false)" />
     <script src="_framework/blazor.web.js"></script>
     <script src="_content/Flowbite/flowbite.js"></script>
     <script src="_content/Flowbite/prism.js"></script>

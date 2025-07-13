@@ -13,9 +13,4 @@
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.10" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Exceptions\" />
-    <Folder Include="Prompt\Roleplay\" />
-  </ItemGroup>
-
 </Project>

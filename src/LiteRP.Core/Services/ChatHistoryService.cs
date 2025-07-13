@@ -22,9 +22,9 @@ public class ChatHistoryService : IChatHistoryService
         Directory.CreateDirectory(ChatsPath);
     }
 
-    public async Task<List<ChatSession>> GetChatHistoryListAsync()
+    public async Task<List<ChatSessionState>> GetChatHistoryListAsync()
     {
-        var sessions = new List<ChatSession>();
+        var sessions = new List<ChatSessionState>();
         var files = Directory.GetFiles(ChatsPath, "*.json");
 
         foreach (var file in files)
@@ -32,7 +32,7 @@ public class ChatHistoryService : IChatHistoryService
             try
             {
                 var json = await File.ReadAllTextAsync(file);
-                var session = JsonSerializer.Deserialize<ChatSession>(json);
+                var session = JsonSerializer.Deserialize<ChatSessionState>(json);
                 if (session != null)
                 {
                     sessions.Add(session);
@@ -47,7 +47,7 @@ public class ChatHistoryService : IChatHistoryService
         return sessions.OrderByDescending(s => s.LastModified).ToList();
     }
 
-    public async Task<ChatSession?> GetChatSessionAsync(Guid id)
+    public async Task<ChatSessionState?> GetChatSessionAsync(Guid id)
     {
         var filePath = Path.Combine(ChatsPath, $"{id}.json");
         if (!File.Exists(filePath))
@@ -56,10 +56,10 @@ public class ChatHistoryService : IChatHistoryService
         }
         
         var json = await File.ReadAllTextAsync(filePath);
-        return JsonSerializer.Deserialize<ChatSession>(json);
+        return JsonSerializer.Deserialize<ChatSessionState>(json);
     }
     
-    public async Task SaveChatSessionAsync(ChatSession session)
+    public async Task SaveChatSessionAsync(ChatSessionState session)
     {
         session.LastModified = DateTime.UtcNow;
 

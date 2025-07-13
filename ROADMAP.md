@@ -10,7 +10,7 @@ Basic functionality limited to launching the app and chatting.
 Minimum feature set for practical usage
 - [x] Navigation sidebar (Chat • Characters • Settings)
 - [x] Characters page: Import TavernAI v2 `.png` files with quick previews (name + avatar)
-- [ ] Chat using character `Description` in prompts
+- [x] Chat using character `description` and `first_mes` in prompts
 - [x] Character deletion
 - [x] Settings page moved to dedicated route
 - [ ] Open browser with app page on server start
@@ -21,7 +21,7 @@ Feature-complete for public testing
 - [ ] **Stop generation** button
 - [ ] Send messages using Enter key
 - [ ] Markdown rendering in chat
-- [ ] Character prompts using: `Description`, `Personality`, `Scenario`, `Greetings`, `ExampleOfDialogues`
+- [ ] Character prompts using: `personality`, `scenario`, `mes_example`
 - [ ] Back-end connection status indicator
 - [ ] Automatic settings saving
 - [ ] Characters page enhancements:

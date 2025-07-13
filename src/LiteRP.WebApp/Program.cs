@@ -45,8 +45,7 @@ try
     builder.Services.AddSingleton<ICharacterService, CharacterService>();
     builder.Services.AddSingleton<ILorebookService, LorebookService>();
     builder.Services.AddSingleton<IAvatarService, AvatarService>();
-    builder.Services.AddSingleton<IChatHistoryService, ChatHistoryService>();
-    builder.Services.AddScoped<IAIChatService, AIChatService>();
+    builder.Services.AddSingleton<IChatSessionService, ChatSessionService>();
 
     builder.Services.AddScoped<IElementClickObserverService, ElementClickObserverService>();
 

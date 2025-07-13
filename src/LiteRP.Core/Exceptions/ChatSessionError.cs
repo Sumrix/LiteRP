@@ -1,6 +1,6 @@
 ﻿namespace LiteRP.Core.Exceptions;
 
-public enum AIChatServiceError
+public enum ChatSessionError
 {
     Undefined = 0,
     ConfigurationMissing,
