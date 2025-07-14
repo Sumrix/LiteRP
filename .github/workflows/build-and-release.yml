@@ -88,7 +88,7 @@ jobs:
           fetch-depth: 0
 
       - name: Generate changelog
-        uses: orhun/git-cliff-action@v2
+        uses: orhun/git-cliff-action@v4
         with:
           config: .github/cliff.toml
           args: --latest
