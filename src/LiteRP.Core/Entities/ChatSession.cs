@@ -48,17 +48,35 @@ public class ChatSession
         {
             var settings = await settingsService.GetSettingsAsync();
 
-            var systemPromptBuilder = new StringBuilder();
-            systemPromptBuilder.Append(settings.SystemPrompt);
-            systemPromptBuilder.Append("\n\n# Character Description:");
-            systemPromptBuilder.Append(character.Description);
+            var charName = character.Name;
+            var userName = settings.UserName;
 
-            var finalSystemPrompt = ReplacePlaceholders(systemPromptBuilder.ToString(), character);
+            var sb = new StringBuilder()
+                .AppendLine($"You are {charName}. Your goal is to engage in a roleplay conversation with {userName}.")
+                .AppendLine();
+            
+            void Section(string title, string? content)
+            {
+                if (!string.IsNullOrWhiteSpace(content))
+                {
+                    sb.AppendLine($"## {title}")
+                        .AppendLine(content)
+                        .AppendLine();
+                }
+            }
+
+            Section($"{charName}'s Description", character.Description);
+            Section($"{charName}'s Personality", character.Personality);
+            Section("Scenario", character.Scenario);
+            Section("Example dialogue", character.Prompt.ExampleOfDialogues);
+            Section("Rules", settings.SystemPrompt);
+
+            var finalSystemPrompt = ReplacePlaceholders(sb.ToString(), charName, userName);
             history.AddSystemMessage(finalSystemPrompt);
 
             if (!string.IsNullOrWhiteSpace(character.Prompt.Greetings[0]))
             {
-                var finalGreeting = ReplacePlaceholders(character.Prompt.Greetings[0], character);
+                var finalGreeting = ReplacePlaceholders(character.Prompt.Greetings[0], charName, userName);
                 history.AddAssistantMessage(finalGreeting);
             }
         }
@@ -73,14 +91,14 @@ public class ChatSession
         return history;
     }
 
-    private static string ReplacePlaceholders(string text, Character character)
+    private static string ReplacePlaceholders(string text, string charName, string userName)
     {
         // Using a case-insensitive replace is more robust.
         return text
-            .Replace("{{char}}", character.Name, StringComparison.InvariantCultureIgnoreCase)
-            .Replace("<BOT>", character.Name, StringComparison.InvariantCultureIgnoreCase)
-            .Replace("{{user}}", "You", StringComparison.InvariantCultureIgnoreCase)
-            .Replace("<USER>", "You", StringComparison.InvariantCultureIgnoreCase);
+            .Replace("{{char}}", charName, StringComparison.InvariantCultureIgnoreCase)
+            .Replace("<BOT>", charName, StringComparison.InvariantCultureIgnoreCase)
+            .Replace("{{user}}", userName, StringComparison.InvariantCultureIgnoreCase)
+            .Replace("<USER>", userName, StringComparison.InvariantCultureIgnoreCase);
     }
 
     public async IAsyncEnumerable<string> GetStreamingResponseAsync(

@@ -16,7 +16,7 @@ public class CharacterPrompt
     /// A sequence of messages demonstrating character speech patterns and behavior.
     /// These are examples, not part of the actual chat history.
     /// </summary>
-    public List<string> ExampleOfDialogues { get; set; } = new();
+    public string ExampleOfDialogues { get; set; } = string.Empty;
 
     /// <summary>
     /// A character-specific system prompt.

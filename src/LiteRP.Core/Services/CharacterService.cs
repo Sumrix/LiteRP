@@ -198,7 +198,7 @@ public class CharacterService : ICharacterService
                 Greetings = BuildGreetings(data.FirstMessage, data.AlternateGreetings),
                 SystemPrompt = data.SystemPrompt.Trim(),
                 PostHistoryInstructions = data.PostHistoryInstructions.Trim(),
-                ExampleOfDialogues = ParseExampleOfDialogues(data.MessageExample)
+                ExampleOfDialogues = data.MessageExample //ParseExampleOfDialogues(data.MessageExample)
             }
         };
 
@@ -229,7 +229,7 @@ public class CharacterService : ICharacterService
             Prompt = new CharacterPrompt
             {
                 Greetings = BuildGreetings(cardV1.FirstMessage),
-                ExampleOfDialogues = ParseExampleOfDialogues(cardV1.MessageExample)
+                ExampleOfDialogues = cardV1.MessageExample // ParseExampleOfDialogues(cardV1.MessageExample)
             }
         };
 

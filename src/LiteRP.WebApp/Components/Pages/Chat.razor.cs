@@ -18,6 +18,12 @@ public partial class Chat : IDisposable
     private Character _character = null!;
     private ChatSession _chatSession = null!;
     private readonly CancellationTokenSource _cts = new();
+    private AppSettings _appSettings;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _appSettings = await SettingsService.GetSettingsAsync();
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -32,7 +38,7 @@ public partial class Chat : IDisposable
             _chatSession = await ChatSessionService.CreateNewSessionAsync(character);
             _chatMessageViewModels = _chatSession.ToState().Messages
                 .Where(message => message.Role is ChatRole.Assistant or ChatRole.User)
-                .Select(message => ChatMessageViewModel.FromChatMessage(message, character))
+                .Select(message => ChatMessageViewModel.FromChatMessage(message, _appSettings.UserName, character))
                 .ToList();
         }
     }
@@ -49,7 +55,7 @@ public partial class Chat : IDisposable
     {
         if (string.IsNullOrWhiteSpace(_userInput)) return;
 
-        _chatMessageViewModels.Add(ChatMessageViewModel.UserMessage(_userInput));
+        _chatMessageViewModels.Add(ChatMessageViewModel.UserMessage(_appSettings.UserName, _userInput));
 
         var aiResponse = ChatMessageViewModel.AiMessage("", _character);
         _chatMessageViewModels.Add(aiResponse);
