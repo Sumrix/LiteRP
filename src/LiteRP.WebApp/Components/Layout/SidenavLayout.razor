@@ -1,4 +1,6 @@
-﻿@inject IStringLocalizer<SharedResources> L
+﻿@using Flowbite.Components
+@using LiteRP.WebApp.Components.Organisms.SidenavComponent
+@inject IStringLocalizer<SharedResources> L
 
 <Sidenav @ref="_sidenav">
     <SidenavHeader>
@@ -12,7 +14,8 @@
         <SidenavGroup>
             <SidenavItem Href="/characters" Text="@L["Characters"]" Icon="new UsersIcon()" />
             <SidenavItem Href="/settings" Text="@L["Settings"]" Icon="new GearIcon()" />
-            @* <SidenavItem Href="/buttons" Text="Buttons" /> *@
+            @* <SidenavItem Href="/buttons" Text="Buttons" />
+            <SidenavItem Href="/alerts" Text="Alerts" /> *@
         </SidenavGroup>
 
 @*         <SidenavGroup Title="@L["Chats"]" IsTopBordered="true">

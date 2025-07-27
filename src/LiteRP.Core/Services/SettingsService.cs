@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using LiteRP.Core.Helpers;
 using LiteRP.Core.Models;
 using LiteRP.Core.Services.Interfaces;
 
@@ -9,11 +10,6 @@ namespace LiteRP.Core.Services;
 
 public class SettingsService : ISettingsService
 {
-    private static readonly string AppDataPath = 
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "LiteRP");
-
-    private static readonly string SettingsFilePath = Path.Combine(AppDataPath, "settings.json");
-
     private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
     
     private AppSettings? _cachedSettings;
@@ -24,34 +20,33 @@ public class SettingsService : ISettingsService
     {
         if (_cachedSettings != null)
         {
-            return _cachedSettings;
+            return _cachedSettings.Clone();
         }
 
-        if (!File.Exists(SettingsFilePath))
+        if (!File.Exists(PathManager.SettingsFilePath))
         {
             _cachedSettings = new AppSettings();
             await SaveSettingsAsync(_cachedSettings);
-            return _cachedSettings;
+            return _cachedSettings.Clone();
         }
 
         try
         {
-            var json = await File.ReadAllTextAsync(SettingsFilePath);
+            var json = await File.ReadAllTextAsync(PathManager.SettingsFilePath);
             _cachedSettings = JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
-            return _cachedSettings;
+            return _cachedSettings.Clone();
         }
         catch (Exception)
         {
             _cachedSettings = new AppSettings();
-            return _cachedSettings;
+            return _cachedSettings.Clone();
         }
     }
 
     public async Task SaveSettingsAsync(AppSettings settings)
     {
-        Directory.CreateDirectory(AppDataPath);
         var json = JsonSerializer.Serialize(settings, SerializerOptions);
-        await File.WriteAllTextAsync(SettingsFilePath, json);
+        await File.WriteAllTextAsync(PathManager.SettingsFilePath, json);
 
         _cachedSettings = settings;
 

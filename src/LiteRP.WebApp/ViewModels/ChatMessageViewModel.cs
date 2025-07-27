@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using LiteRP.Core.Enums;
 using LiteRP.Core.Models;
 
 namespace LiteRP.WebApp.ViewModels;

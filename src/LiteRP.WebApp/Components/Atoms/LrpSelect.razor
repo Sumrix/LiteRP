@@ -1,0 +1,46 @@
+﻿@typeparam TValue
+@inherits InputBase<TValue>
+
+<div class="@WrapperClasses">
+    @if (GetLeftAddonState())
+    {
+        <span class="@AddonLeftClasses">@AddonLeft</span>
+    }
+    <div class="relative w-full">
+        @if (GetLeftIconState())
+        {
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                @if (Icon != null)
+                {
+                    <DynamicComponent Type="@Icon" Parameters="@IconParameters" />
+                }
+                else if (IconFragment != null)
+                {
+                    @IconFragment
+                }
+            </div>
+        }
+
+        <select @ref="_elementRef"
+                class="@InputClasses"
+                @bind="@CurrentValueAsString"
+                disabled="@Disabled"
+                required="@Required"
+                data-testid="flowbite-select"
+                aria-describedby="@(!string.IsNullOrEmpty(HelperText) ? _helperTextId : null)"
+                @attributes="AdditionalAttributes">
+            @ChildContent
+        </select>
+    </div>
+    @if (GetRightAddonState())
+    {
+        <span class="@AddonRightClasses">@AddonRight</span>
+    }
+</div>
+
+@if (!string.IsNullOrEmpty(_internalHelpText))
+{
+    <p id="@_helperTextId" class="@HelperTextClasses">
+        @_internalHelpText
+    </p>
+}

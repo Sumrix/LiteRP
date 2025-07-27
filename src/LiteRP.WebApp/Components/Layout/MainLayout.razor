@@ -1,17 +1,19 @@
-﻿@using Flowbite.Layout
+﻿@using Flowbite.Components
+@using Flowbite.Layout
 @inherits LayoutComponentBase
 @inject IStringLocalizer<SharedResources> L
 
-<div class="antialiased bg-gray-50 dark:bg-gray-900 min-h-screen">
+<div class="antialiased bg-gray-50 dark:bg-gray-900 h-dvh flex flex-col overflow-hidden">
     <Navbar Class="md:hidden">
         <div class="flex items-center gap-2">
-            <ShadowButton OnClick="@_sidenav.ToggleDrawerAsync"
-                          aria-controls="@_sidenav.Id"
-                          title="@L["Open sidebar"]">
-                <svg aria-hidden="true" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
-                </svg>
-            </ShadowButton>
+            <LrpButton OnClick="@_sidenav.ToggleDrawerAsync"
+                      aria-controls="@_sidenav.Id"
+                      title="@L["Open sidebar"]"
+                      Variant="LrpButtonStyle.Ghost"
+                      Color="LrpButtonColor.Grey"
+                      Icon="IconTypes.Sidenav"
+                      Size="LrpButtonSize.Medium">
+            </LrpButton>
             <NavbarBrand>
                 <a href="/" class="flex items-center ps-2.5">
                     <img class="w-6 h-6 me-3 text-primary-500" src="img/logo.svg"/>
@@ -21,7 +23,7 @@
         </div>
     </Navbar>
     <SidenavLayout @ref="_sidenav"/>
-    <main class="p-4 md:ml-64 min-h-screen">
+    <main class="flex-1 min-h-0 overflow-y-auto py-4 px-2 p md:ml-64" style="scrollbar-gutter: stable both-edges;">
         @Body
     </main>
 </div>

@@ -11,6 +11,7 @@ public static class PathManager
     public static readonly string LorebooksDataPath = Path.Combine(RootPath, "Lorebooks");
     public static readonly string AvatarsDataPath = Path.Combine(RootPath, "Avatars");
     public static readonly string LogsPath = Path.Combine(RootPath, "Logs");
+    public static readonly string SettingsFilePath = Path.Combine(RootPath, "settings.json");
 
     static PathManager()
     {

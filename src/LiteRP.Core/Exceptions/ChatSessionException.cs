@@ -1,4 +1,5 @@
 ﻿using System;
+using LiteRP.Core.Enums;
 
 namespace LiteRP.Core.Exceptions;
 

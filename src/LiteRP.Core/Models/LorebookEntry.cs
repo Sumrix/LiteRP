@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using LiteRP.Core.Enums;
 
 namespace LiteRP.Core.Models;
 
@@ -10,7 +11,7 @@ public class LorebookEntry
     /// <summary>
     /// A list of keywords that trigger the insertion of this entry's content.
     /// </summary>
-    public List<string> Keys { get; set; } = new();
+    public List<string> Keys { get; set; } = [];
 
     /// <summary>
     /// The text content to be inserted into the prompt when the entry is triggered.
@@ -52,7 +53,7 @@ public class LorebookEntry
     /// <summary>
     /// Secondary keys used when 'IsSelective' is true. Ignored otherwise.
     /// </summary>
-    public List<string> SecondaryKeys { get; set; } = new();
+    public List<string> SecondaryKeys { get; set; } = [];
 
     /// <summary>
     /// Defines where the entry is placed relative to the character definition.

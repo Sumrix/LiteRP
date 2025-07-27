@@ -6,10 +6,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
+    <link rel="preload"
+          href="@Assets["fonts/InterVariable.woff2"]"
+          as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="@Assets["css/inter.css"]" />
     <link rel="stylesheet" href="@Assets["_content/Flowbite/flowbite.min.css"]" />
     <link rel="stylesheet" href="@Assets["LiteRP.WebApp.styles.css"]" />
     <link rel="stylesheet" href="@Assets["css/app.min.css"]" />
-    <link rel="stylesheet" href="@Assets["css/inter.css"]" />
     <ImportMap />
     <HeadOutlet @rendermode="new InteractiveServerRenderMode(prerender: false)" />
 </head>
@@ -20,6 +23,7 @@
     <script src="_content/Flowbite/flowbite.js"></script>
     <script src="_content/Flowbite/prism.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/mudInputAutoGrow.js"></script>
 </body>
 
 </html>

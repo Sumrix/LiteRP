@@ -1,0 +1,98 @@
+﻿@using LiteRP.WebApp.Utilities
+@typeparam TModel
+@implements IDisposable
+
+<EditForm EditContext="@_editContext" FormName="@FormName">
+    <DataAnnotationsValidator />
+    @ChildContent
+</EditForm>
+
+@code
+{
+    private EditContext _editContext = null!;
+    private Debouncer<TModel> _debouncer = null!;
+    private TModel _previousModel = default!;
+
+    [Parameter, EditorRequired] public required TModel Model { get; set; }
+
+    [Parameter] public EventCallback<TModel> DebouncedValueChanged { get; set; }
+    [Parameter] public int DebounceInterval { get; set; } = 1000;
+
+    [Parameter] public bool IsValid { get; set; }
+    [Parameter] public EventCallback<bool> IsValidChanged { get; set; }
+
+    [Parameter] public bool IsDirty { get; set; }
+    [Parameter] public EventCallback<bool> IsDirtyChanged { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string FormName { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        _debouncer = new Debouncer<TModel>();
+        _debouncer.Debounced += OnDebouncedFired;
+    }
+
+    protected override void OnParametersSet()
+    {
+        _debouncer.DebounceInterval = DebounceInterval;
+
+        if (Model != null && Model.Equals(_previousModel) == false)
+        {
+            if (_editContext != null)
+            {
+                _editContext.OnFieldChanged -= HandleFieldChanged;
+                _editContext.OnValidationStateChanged -= HandleValidationStatChanged;
+            }
+
+            _editContext = new EditContext(Model);
+            _editContext.OnFieldChanged += HandleFieldChanged;
+            _editContext.OnValidationStateChanged += HandleValidationStatChanged;
+            _previousModel = Model;
+
+            if (IsDirty)
+            {
+                IsDirty = false;
+                InvokeAsync(() => IsDirtyChanged.InvokeAsync(IsDirty)).CatchAndLog();
+            }
+
+            if (!IsValid)
+            {
+                IsValid = true;
+                InvokeAsync(() => IsValidChanged.InvokeAsync(IsValid)).CatchAndLog();
+            }
+        }
+    }
+
+    private void OnDebouncedFired(TModel? value)
+    {
+        InvokeAsync(() => DebouncedValueChanged.InvokeAsync(value)).CatchAndLog();
+    }
+
+    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        _debouncer.Update(Model);
+
+        if (_editContext.IsModified())
+        {
+            IsDirty = true;
+            InvokeAsync(() => IsDirtyChanged.InvokeAsync(true)).CatchAndLog();
+        }
+    }
+
+    private void HandleValidationStatChanged(object? sender, ValidationStateChangedEventArgs e)
+    {
+        IsValid = !_editContext.GetValidationMessages().Any();
+        InvokeAsync(() => IsValidChanged.InvokeAsync(IsValid)).CatchAndLog();
+    }
+
+    public void Dispose()
+    {
+        if (_editContext != null)
+        {
+            _editContext.OnFieldChanged -= HandleFieldChanged;
+            _editContext.OnValidationStateChanged -= HandleValidationStatChanged;
+        }
+        _debouncer?.Dispose();
+    }
+}

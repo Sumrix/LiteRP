@@ -1,6 +1,4 @@
-﻿using LiteRP.Core.Models;
-
-namespace LiteRP.WebApp;
+﻿namespace LiteRP.WebApp;
 
 public static class UrlManager
 {

@@ -1,4 +1,5 @@
 ﻿using LiteRP.Core.Entities;
+using LiteRP.Core.Enums;
 using LiteRP.Core.Exceptions;
 using LiteRP.Core.Models;
 using LiteRP.WebApp.ViewModels;
@@ -13,12 +14,12 @@ public partial class Chat : IDisposable
     [Parameter, EditorRequired]
     public Guid CharacterIdForNewChat { get; set; }
 
-    private List<ChatMessageViewModel> _chatMessageViewModels = new();
+    private List<ChatMessageViewModel> _chatMessageViewModels = [];
     private string _userInput = String.Empty;
     private Character _character = null!;
     private ChatSession _chatSession = null!;
     private readonly CancellationTokenSource _cts = new();
-    private AppSettings _appSettings;
+    private AppSettings _appSettings = null!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -81,7 +82,7 @@ public partial class Chat : IDisposable
         catch (ChatSessionException ex)
         {
             var errorMessage = GetUserFriendlyErrorMessage(ex.ErrorCode);
-            Logger.LogError(ex, errorMessage);
+            Logger.LogError(ex, "ChatSessionException: {ErrorMessage}", errorMessage);
             ToastService.ShowError(errorMessage);
         }
         catch (OperationCanceledException)
@@ -91,7 +92,7 @@ public partial class Chat : IDisposable
         catch (Exception ex)
         {
             const string errorMessage = "An unexpected error occurred. Please try again later.";
-            Logger.LogError(ex, errorMessage);
+            Logger.LogError(ex, "UnexpectedException: {ErrorMessage}", errorMessage);
             ToastService.ShowError(errorMessage);
         }
         finally
@@ -100,7 +101,7 @@ public partial class Chat : IDisposable
         }
     }
 
-    private string GetUserFriendlyErrorMessage(ChatSessionError code)
+    private static string GetUserFriendlyErrorMessage(ChatSessionError code)
     {
         return code switch
         {
@@ -129,5 +130,6 @@ public partial class Chat : IDisposable
     {
         _cts.Cancel();
         _cts.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

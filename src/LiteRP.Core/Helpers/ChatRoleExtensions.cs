@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
-using LiteRP.Core.Models;
+using LiteRP.Core.Enums;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace LiteRP.Core.Helpers;

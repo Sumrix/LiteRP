@@ -1,0 +1,151 @@
+﻿@using LiteRP.WebApp.Utilities
+
+@if (_isRendered)
+{
+    <div id="@_id" class="@FinalCssClass" style="@Style" role="alert">
+        <div class="flex">
+            @if (IconFragment != null)
+            {
+                @IconFragment
+            }
+            else if (Icon != null)
+            {
+                <DynamicComponent Type="@Icon" Parameters="@_iconParameters" />
+            }
+            else if (ShowIcon)
+            {
+                <svg class="@IconClasses" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                </svg>
+            }
+
+            <div class="flex-grow me-1.5">
+                @HeaderContent
+            </div>
+
+            @if (ShowCloseButton)
+            {
+                @*Set variant null to manually define colors through the classes*@
+                <LrpButton Icon="IconTypes.Close" 
+                           Variant="null"
+                           Size="LrpButtonSize.Small"
+                           OnClick="DismissAsync"
+                           Class="@_buttonClass" />
+            }
+        </div>
+
+        @if (BodyContent != null)
+        {
+            <div class="mt-2 text-sm">
+                @BodyContent
+            </div>
+        }
+    </div>
+}
+
+
+@code {
+    private readonly string _id = "alert-" + Guid.NewGuid().ToString("N");
+    private bool _isVisible = true;
+    private bool _isRendered = true;
+
+    private string _alertClass = null!;
+    private string _buttonClass = null!;
+
+    private string FinalCssClass => new CssBuilder(_alertClass)
+        .AddClass("transition-opacity ease-out")
+        .AddClass("opacity-100", when: _isVisible)
+        .AddClass("opacity-0", when: !_isVisible)
+        .Build();
+
+    private string Style => $"transition-duration: {TransitionDuration}ms;";
+    private const string IconClasses = "shrink-0 inline w-4 h-4 me-3 mt-[2px]";
+    private readonly Dictionary<string, object> _iconParameters = new() { { "class", IconClasses } };
+
+    [Parameter] public RenderFragment? HeaderContent { get; set; }
+    [Parameter] public RenderFragment? BodyContent { get; set; }
+    [Parameter] public Type? Icon { get; set; }
+    [Parameter] public RenderFragment? IconFragment { get; set; }
+    [Parameter] public bool ShowIcon { get; set; }
+    [Parameter] public bool ShowCloseButton { get; set; }
+    [Parameter] public AlertColor Color { get; set; } = AlertColor.Info;
+    [Parameter] public bool ShowBorder { get; set; }
+    [Parameter] public bool ShowAccent { get; set; }
+    [Parameter] public int TransitionDuration { get; set; } = 300;
+    [Parameter] public EventCallback OnDismiss { get; set; }
+
+    private record AlertColorStyles(string Text, string Background, string Border, string Button, string FocusRing);
+
+    protected override void OnParametersSet()
+    {
+        var styles = GetAlertStyles();
+
+        _alertClass = new CssBuilder("p-4 text-sm")
+            .AddClass(styles.Background)
+            .AddClass(styles.Text)
+            .AddClass("rounded-lg", when: !ShowAccent)
+            .AddClass("border", when: ShowBorder)
+            .AddClass("border-t-4", when: ShowAccent)
+            .AddClass(styles.Border, when: ShowBorder || ShowAccent)
+            .Build();
+
+        _buttonClass = new CssBuilder("ms-auto -mx-1.5 -my-1.5 rounded-lg focus:ring-2 p-1.5 inline-flex items-center justify-center h-8 w-8")
+            .AddClass(styles.Button)
+            .AddClass(styles.FocusRing)
+            .Build();
+    }
+
+    private AlertColorStyles GetAlertStyles()
+    {
+        return Color switch
+        {
+            AlertColor.Danger => new AlertColorStyles(
+                Text: "text-red-800 dark:text-red-400",
+                Background: "bg-red-50 dark:bg-gray-800",
+                Border: "border-red-300 dark:border-red-800",
+                Button: "bg-red-50 text-red-500 hover:bg-red-200 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-gray-700",
+                FocusRing: "focus:ring-red-400"
+            ),
+            AlertColor.Success => new AlertColorStyles(
+                Text: "text-green-800 dark:text-green-400",
+                Background: "bg-green-50 dark:bg-gray-800",
+                Border: "border-green-300 dark:border-green-800",
+                Button: "bg-green-50 text-green-500 hover:bg-green-200 dark:bg-gray-800 dark:text-green-400 dark:hover:bg-gray-700",
+                FocusRing: "focus:ring-green-400"
+            ),
+            AlertColor.Warning => new AlertColorStyles(
+                Text: "text-yellow-800 dark:text-yellow-300",
+                Background: "bg-yellow-50 dark:bg-gray-800",
+                Border: "border-yellow-300 dark:border-yellow-800",
+                Button: "bg-yellow-50 text-yellow-500 hover:bg-yellow-200 dark:bg-gray-800 dark:text-yellow-300 dark:hover:bg-gray-700",
+                FocusRing: "focus:ring-yellow-400"
+            ),
+            AlertColor.Dark => new AlertColorStyles(
+                Text: "text-gray-800 dark:text-gray-300",
+                Background: "bg-gray-50 dark:bg-gray-800",
+                Border: "border-gray-300 dark:border-gray-600",
+                Button: "bg-gray-50 text-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white",
+                FocusRing: "focus:ring-gray-400"
+            ),
+            _ => new AlertColorStyles( // Info
+                Text: "text-blue-800 dark:text-blue-400",
+                Background: "bg-blue-50 dark:bg-gray-800",
+                Border: "border-blue-300 dark:border-blue-800",
+                Button: "bg-blue-50 text-blue-500 hover:bg-blue-200 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-gray-700",
+                FocusRing: "focus:ring-blue-400"
+            )
+        };
+    }
+
+    public async Task DismissAsync()
+    {
+        if (!_isVisible) return;
+
+        _isVisible = false;
+        await OnDismiss.InvokeAsync(this);
+        await Task.Delay(TransitionDuration);
+        _isRendered = false;
+
+        StateHasChanged();
+    }
+}

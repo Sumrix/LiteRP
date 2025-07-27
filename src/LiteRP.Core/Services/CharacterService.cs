@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using LiteRP.Core.Enums;
 using LiteRP.Core.Helpers;
 using LiteRP.Core.Models;
 using LiteRP.Core.Models.CharacterCard;
@@ -31,7 +32,6 @@ public class CharacterService : ICharacterService
     {
         _avatarService = avatarService;
         _logger = logger;
-        Directory.CreateDirectory(PathManager.CharactersDataPath);
     }
 
     public async Task<List<Character>> GetCharactersAsync()

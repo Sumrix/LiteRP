@@ -1,0 +1,165 @@
+﻿@page "/alerts"
+
+<PageTitle>Alerts</PageTitle>
+
+<div class="max-w-4xl mx-auto gap-8 flex flex-col">
+    <div class="gap-4 flex flex-col">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">Default alert</h2>
+        
+        <div class="flex flex-col gap-2 rounded-lg bg-white p-4 shadow dark:bg-gray-800">
+            @foreach (var color in Enum.GetValues<AlertColor>())
+            {
+                <LrpAlert Color="color">
+                    <HeaderContent>
+                        <span class="font-medium">@color alert!</span> Change a few things up and try submitting again.
+                    </HeaderContent>
+                </LrpAlert>
+            }
+        </div>
+    </div>
+
+    <div class="gap-4 flex flex-col">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">Alerts with icon</h2>
+
+        <div class="flex flex-col gap-2 rounded-lg bg-white p-4 shadow dark:bg-gray-800">
+            @foreach (var color in Enum.GetValues<AlertColor>())
+            {
+                <LrpAlert Color="color" ShowIcon>
+                    <HeaderContent>
+                        <span class="font-medium">@color alert!</span> Change a few things up and try submitting again.
+                    </HeaderContent>
+                </LrpAlert>
+            }
+        </div>
+    </div>
+
+    <div class="gap-4 flex flex-col">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">Bordered alerts</h2>
+
+        <div class="flex flex-col gap-2 rounded-lg bg-white p-4 shadow dark:bg-gray-800">
+            @foreach (var color in Enum.GetValues<AlertColor>())
+            {
+                <LrpAlert Color="color" ShowIcon ShowBorder>
+                    <HeaderContent>
+                        <span class="font-medium">@color alert!</span> Change a few things up and try submitting again.
+                    </HeaderContent>
+                </LrpAlert>
+            }
+        </div>
+    </div>
+
+    <div class="gap-4 flex flex-col">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">Alerts with list</h2>
+
+        <div class="flex flex-col gap-2 rounded-lg bg-white p-4 shadow dark:bg-gray-800">
+            <LrpAlert Color="AlertColor.Info" ShowIcon>
+                <HeaderContent>
+                    <span class="font-medium">Ensure that these requirements are met:</span>
+                    <ul class="mt-1.5 list-disc list-inside">
+                        <li>At least 10 characters (and up to 100 characters)</li>
+                        <li>At least one lowercase character</li>
+                        <li>Inclusion of at least one special character, e.g., ! @@! # ?</li>
+                    </ul>
+                </HeaderContent>
+            </LrpAlert>
+            <LrpAlert Color="AlertColor.Danger" ShowIcon>
+                <HeaderContent>
+                    <span class="font-medium">Ensure that these requirements are met:</span>
+                    <ul class="mt-1.5 list-disc list-inside">
+                        <li>At least 10 characters (and up to 100 characters)</li>
+                        <li>At least one lowercase character</li>
+                        <li>Inclusion of at least one special character, e.g., ! @@ # ?</li>
+                    </ul>
+                </HeaderContent>
+            </LrpAlert>
+        </div>
+    </div>
+
+    <div class="gap-4 flex flex-col">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">Dismissing</h2>
+
+        <div class="flex flex-col gap-2 rounded-lg bg-white p-4 shadow dark:bg-gray-800">
+            @foreach (var color in Enum.GetValues<AlertColor>())
+            {
+                <LrpAlert Color="color" ShowIcon ShowCloseButton>
+                    <HeaderContent>
+                        <span class="text-sm font-medium">
+                            A simple @color.ToString().ToLower() alert with an <a href="#" class="font-semibold underline hover:no-underline">example link</a>. Give it a click if you like.
+                        </span>
+                    </HeaderContent>
+                </LrpAlert>
+            }
+        </div>
+    </div>
+
+    <div class="gap-4 flex flex-col">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">Border accent</h2>
+
+        <div class="flex flex-col gap-2 rounded-lg bg-white p-4 shadow dark:bg-gray-800">
+            @foreach (var color in Enum.GetValues<AlertColor>())
+            {
+                <LrpAlert Color="color" ShowIcon ShowCloseButton ShowAccent>
+                    <HeaderContent>
+                        <span class="text-sm font-medium">
+                            A simple @color.ToString().ToLower() alert with an <a href="#" class="font-semibold underline hover:no-underline">example link</a>. Give it a click if you like.
+                        </span>
+                    </HeaderContent>
+                </LrpAlert>
+            }
+        </div>
+    </div>
+
+    <div class="gap-4 flex flex-col">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">Additional content</h2>
+
+        <div class="flex flex-col gap-2 rounded-lg bg-white p-4 shadow dark:bg-gray-800">
+            @foreach (var color in Enum.GetValues<AlertColor>())
+            {
+                <LrpAlert Color="color" ShowIcon ShowBorder @ref="Ref">
+                    <HeaderContent>
+                        <h3 class="text-lg font-medium">This is a @color.ToString().ToLower() alert</h3>
+                    </HeaderContent>
+                    <BodyContent>
+                        <div class="mb-4 text-sm">
+                            More info about this info alert goes here. This example text is going to run a bit longer so that you can see how spacing within an alert works with this kind of content.
+                        </div>
+                        <div class="flex gap-2">
+                            <LrpButton Size="LrpButtonSize.Small" Color="GetButtonColor(color)" Icon="IconTypes.EyeSolid">
+                                View more
+                            </LrpButton>
+                            <LrpButton Size="LrpButtonSize.Small" Color="GetButtonColor(color)" Variant="LrpButtonStyle.Outline"
+                                       OnClick="() => DismissAsync(color)">
+                                Dismiss
+                            </LrpButton>
+                        </div>
+                    </BodyContent>
+                </LrpAlert>
+            }
+        </div>
+    </div>
+</div>
+
+@code
+{
+    private readonly List<LrpAlert> _alerts = new();
+
+    public LrpAlert Ref
+    {
+        set => _alerts.Add(value);
+    }
+
+    private async Task DismissAsync(AlertColor color)
+    {
+        await _alerts[(int)color].DismissAsync();
+    }
+
+    private LrpButtonColor GetButtonColor(AlertColor alertColor) => alertColor switch
+    {
+        AlertColor.Info => LrpButtonColor.Primary,
+        AlertColor.Danger => LrpButtonColor.Red,
+        AlertColor.Success => LrpButtonColor.Green,
+        AlertColor.Warning => LrpButtonColor.Yellow,
+        AlertColor.Dark => LrpButtonColor.Grey,
+        _ => LrpButtonColor.Primary
+    };
+}

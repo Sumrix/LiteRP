@@ -1,6 +1,4 @@
-﻿using LiteRP.Core.Models;
-
-namespace LiteRP.Core.Helpers;
+﻿namespace LiteRP.Core.Helpers;
 
 //public static class AvatarSizeHelper
 //{

@@ -1,38 +1,111 @@
 ﻿@page "/settings"
+@using LiteRP.Core.Enums
+@using LiteRP.Core.Services
 @inject ISettingsService SettingsService
 @inject IToastService ToastService
+@inject IJSRuntime JS
+@inject OllamaStatusService OllamaStatusService
+@implements IDisposable
 
 <PageTitle>LiteRP - Settings</PageTitle>
 
-<div class="max-w-2xl mx-auto lg:py-16">
+<div class="max-w-4xl mx-auto">
 
-    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Settings</h1>
+    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Settings</h2>
+    
+    @if (_showGuide)
+    {
+        <div class="mb-4">
+            <LrpAlert Color="AlertColor.Info" ShowBorder ShowCloseButton ShowIcon OnDismiss="DismissGuide">
+                <HeaderContent>
+                    <span class="font-medium">Quick Start Guide</span>
+                    <ul class="mt-1.5 list-decimal list-inside">
+                        <li>Install <a href="https://ollama.ai" class="font-semibold underline hover:no-underline" target="_blank">Ollama</a>.</li>
+                        <li>Run <code class="bg-blue-100 dark:bg-gray-700 px-1 rounded cursor-pointer" @onclick="CopyCommand">ollama pull gemma3:12b</code>.</li>
+                    </ul>
+                </HeaderContent>
+            </LrpAlert>
+        </div>
+    }
 
-    <div class="p-6 bg-white dark:bg-gray-900 rounded-lg">
-        
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Ollama Connection</h2>
-        <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">Configure the connection settings to your Ollama instance.</p>
-        
-        <form class="flex flex-col gap-6" method="post" @onsubmit="SaveSettings" @formname="settings-form">
-            <div>
-                <div class="mb-2 block">
-                    <Label For="url" Value="URL" />
+    <LrpForm TModel="AppSettings" Model="@AppSettings" DebouncedValueChanged="SaveSettings" DebounceInterval="500"
+             @bind-IsValid="_isValid">
+
+        <div class="space-y-4">
+            <div class="p-4 md:p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center mb-4">
+                    Ollama Configuration
+                </h2>
+
+                <div class="grid gap-4 sm:grid-cols-2 sm:gap-6">
+                    <div class="w-full">
+                        <LrpLabel for="url" Class="flex items-center gap-1 mb-2">
+                            Ollama URL
+                            <LrpHelpIcon Content="The URL where your Ollama server is running"/>
+                        </LrpLabel>
+                        <LrpInput TValue="string" id="url" Placeholder="http://localhost:11434" Required
+                                  @bind-Value="@AppSettings.OllamaUrl"
+                                  DisplayName="Ollama URL"
+                                  DebounceInterval="500"
+                                  DebouncedValueChanged="CheckConnection">
+                            <RightIconFragment>
+                                <LrpTooltip Content="@GetTooltipContent()"
+                                            Class="w-full h-full flex items-center justify-center">
+                                    <Indicator Color="GetIndicatorColor()"/>
+                                </LrpTooltip>
+                            </RightIconFragment>
+                        </LrpInput>
+                    </div>
+                    <div class="w-full">
+                        <LrpLabel for="model" Class="flex items-center gap-1 mb-2">
+                            Model Name
+                            <LrpHelpIcon Content="Select which model to use for roleplaying"/>
+                        </LrpLabel>
+                        <LrpSelect TValue="string" id="model" Required
+                                   @bind-Value="@AppSettings.ModelName"
+                                   DisplayName="Model Name">
+                            @foreach (var model in OllamaStatusService.Models)
+                            {
+                                <option>@model.Name</option>
+                            }
+                        </LrpSelect>
+                        
+                    </div>
                 </div>
-                <TextInput TValue="string" Id="url" Type="text" Placeholder="http://localhost:11434" Required
-                           @bind-Value="@AppSettings.OllamaUrl" />
             </div>
-            <div>
-                <div class="mb-2 block">
-                    <Label For="model" Value="Model Name" />
+
+            <div class="p-4 md:p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center mb-4">
+                    Chat Configuration
+                </h2>
+
+                <div class="mb-4 sm:mb-5">
+                    <LrpLabel For="userName" Class="flex items-center gap-1 mb-2">
+                        User Name
+                        <LrpHelpIcon Content="How the AI will refer to you in conversations"/>
+                    </LrpLabel>
+
+                    <LrpInput TValue="string" id="userName" Placeholder="Your Name" Required
+                              @bind-Value="@AppSettings.UserName"
+                              DisplayName="User Name"/>
                 </div>
-                <TextInput TValue="string" Id="model" Type="text" Required
-                           @bind-Value="@AppSettings.ModelName" />
+
+                <div class="">
+                    <LrpLabel for="systemPrompt" Class="flex items-center gap-1 mb-2">
+                        System Prompt
+                        <LrpHelpIcon Content="Instructions that guide how the AI should behave and respond"/>
+                    </LrpLabel>
+
+                    <LrpInput id="systemPrompt" Placeholder="E.g., You are a helpful assistant." Required
+                              Lines="10" AutoGrow MaxLines="20"
+                              @bind-Value="@AppSettings.SystemPrompt"
+                              DisplayName="System Prompt"/>
+                </div>
             </div>
-            <div class="flex justify-end">
-                <Button Type="submit" class="w-full sm:w-auto">Save Settings</Button>
-            </div>
-        </form>
-    </div>
+
+        </div>
+
+    </LrpForm>
 </div>
 
 @code
@@ -40,14 +113,63 @@
     [SupplyParameterFromForm]
     private AppSettings AppSettings { get; set; } = new();
 
+    private bool _showGuide;
+    private bool _isValid;
+
     protected override async Task OnInitializedAsync()
     {
+        OllamaStatusService.StatusChanged += async () => await InvokeAsync(StateHasChanged);
+        OllamaStatusService.StartMonitoring(this);
+
         AppSettings = await SettingsService.GetSettingsAsync();
+        _showGuide = AppSettings.ShowSettingsGuide;
     }
 
-    private void SaveSettings()
+    private async Task SaveSettings()
     {
-        SettingsService.SaveSettingsAsync(AppSettings);
-        ToastService.ShowSuccess("Settings saved successfully!");
+        if (_isValid)
+        {
+            await SettingsService.SaveSettingsAsync(AppSettings);
+        }
+    }
+
+    private async Task CheckConnection()
+    {
+        await OllamaStatusService.TriggerCheckAsync();
+    }
+
+    private async Task CopyCommand()
+    {
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", "ollama pull gemma3:12b");
+        ToastService.ShowSuccess("Command copied");
+    }
+
+    private string GetTooltipContent() => OllamaStatusService.Status switch
+    {
+        ConnectionStatus.Success => "Ollama connection is successful",
+        ConnectionStatus.Failed => "Ollama connection failed",
+        ConnectionStatus.Connecting => "Checking Ollama connection...",
+        _ => "Ollama status is unknown"
+    };
+
+    private IndicatorColor GetIndicatorColor() => OllamaStatusService.Status switch
+    {
+        ConnectionStatus.Unknown => IndicatorColor.Gray,
+        ConnectionStatus.Success => IndicatorColor.Green,
+        ConnectionStatus.Failed => IndicatorColor.Red,
+        ConnectionStatus.Connecting => IndicatorColor.Yellow,
+        _ => IndicatorColor.Gray
+    };
+
+    private async Task DismissGuide()
+    {
+        AppSettings.ShowSettingsGuide = false;
+        await SaveSettings();
+    }
+
+    public void Dispose()
+    {
+        OllamaStatusService.StopMonitoring(this);
+        OllamaStatusService.StatusChanged -= StateHasChanged;
     }
 }

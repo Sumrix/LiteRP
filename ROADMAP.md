@@ -21,9 +21,9 @@ Feature-complete for public testing
 - [ ] Chat sidebar displaying conversation history
 - [ ] **Stop generation** button
 - [ ] Markdown rendering in chat
-- [ ] Character prompts using: `personality`, `scenario`, `mes_example`
-- [ ] Back-end connection status indicator
-- [ ] Automatic settings saving
+- [x] Character prompts using: `personality`, `scenario`, `mes_example`
+- [x] Back-end connection status indicator
+- [x] Automatic settings saving
 - [ ] Characters page enhancements:
   - [ ] Full character information view
   - [ ] Character **archiving**

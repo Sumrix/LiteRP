@@ -1,0 +1,86 @@
+﻿@typeparam TValue
+@inherits InputBase<TValue>
+
+<div class="@WrapperClasses">
+    @if (GetLeftAddonState())
+    {
+        <span class="@AddonLeftClasses">@AddonLeft</span>
+    }
+    <div class="relative w-full">
+        @if (GetLeftIconState())
+        {
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center w-10">
+                @if (Icon != null)
+                {
+                    <DynamicComponent Type="@Icon" Parameters="@IconParameters" />
+                }
+                else if (IconFragment != null)
+                {
+                    @IconFragment
+                }
+            </div>
+        }
+
+        @if (GetRightContentState())
+        {
+            <div class="absolute inset-y-0 right-0 flex items-center justify-center w-10">
+                @if (GetClearButtonState())
+                {
+                    <LrpButton Icon="IconTypes.Close"
+                               Variant="LrpButtonStyle.Text"
+                               Color="LrpButtonColor.Grey"
+                               Size="LrpButtonSize.Small"
+                               OnClick="Clear" />
+                }
+                else if (RightIcon != null)
+                {
+                    <DynamicComponent Type="@RightIcon" Parameters="@IconParameters" />
+                }
+                else if (RightIconFragment != null)
+                {
+                    @RightIconFragment
+                }
+            </div>
+        }
+
+        @if (_isTextarea)
+        {
+            <textarea @ref="_elementRef"
+                      rows="@Lines"
+                      class="@InputClasses"
+                      value="@CurrentValueAsString"
+                      @oninput="OnInputChanged"
+                      placeholder="@Placeholder"
+                      disabled="@Disabled"
+                      required="@Required"
+                      data-testid="flowbite-textarea"
+                      aria-describedby="@(!string.IsNullOrEmpty(HelperText) ? _helperTextId : null)"
+                      @attributes="AdditionalAttributes"></textarea>
+        }
+        else
+        {
+            <input @ref="_elementRef"
+                   type="@InputType"
+                   class="@InputClasses"
+                   value="@CurrentValueAsString"
+                   @oninput="OnInputChanged"
+                   placeholder="@Placeholder"
+                   disabled="@Disabled"
+                   required="@Required"
+                   data-testid="flowbite-text-input"
+                   aria-describedby="@(!string.IsNullOrEmpty(HelperText) ? _helperTextId : null)"
+                   @attributes="AdditionalAttributes" />
+        }
+    </div>
+    @if (GetRightAddonState())
+    {
+        <span class="@AddonRightClasses">@AddonRight</span>
+    }
+</div>
+
+@if (!string.IsNullOrEmpty(_internalHelpText))
+{
+    <p id="@_helperTextId" class="@HelperTextClasses">
+        @_internalHelpText
+    </p>
+}

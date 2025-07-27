@@ -1,4 +1,6 @@
-﻿namespace LiteRP.Core.Models;
+﻿using LiteRP.Core.Enums;
+
+namespace LiteRP.Core.Models;
 
 public record ChatMessage
 (

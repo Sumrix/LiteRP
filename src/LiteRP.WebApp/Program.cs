@@ -38,7 +38,8 @@ try
 
     builder.Services.AddFlowbite();
 
-    builder.Services.Configure<AvatarSettings>(builder.Configuration.GetSection("AvatarSettings"));
+    builder.Services.Configure<AvatarOptions>(builder.Configuration.GetSection("Avatar"));
+    builder.Services.Configure<OllamaOptions>(builder.Configuration.GetSection("Ollama"));
 
     builder.Services.AddKernel();
 
@@ -49,7 +50,7 @@ try
     builder.Services.AddSingleton<ILorebookService, LorebookService>();
     builder.Services.AddSingleton<IAvatarService, AvatarService>();
     builder.Services.AddSingleton<IChatSessionService, ChatSessionService>();
-
+    builder.Services.AddSingleton<OllamaStatusService>();
     builder.Services.AddScoped<IElementClickObserverService, ElementClickObserverService>();
 
     builder.Services.AddOutputCache(options =>
@@ -62,7 +63,7 @@ try
 
     if (builder.Environment.IsProduction())
     {
-        builder.Services.AddHostedService<BrowserLauncherHostedService>();
+        builder.Services.AddHostedService<StartupHostedService>();
     }
 
     var app = builder.Build();

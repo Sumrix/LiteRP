@@ -12,11 +12,11 @@ namespace LiteRP.Core.Services;
 
 public class AvatarService : IAvatarService
 {
-    private readonly AvatarSettings _settings;
+    private readonly AvatarOptions _options;
 
-    public AvatarService(IOptions<AvatarSettings> avatarSettings)
+    public AvatarService(IOptions<AvatarOptions> avatarSettings)
     {
-        _settings = avatarSettings.Value;
+        _options = avatarSettings.Value;
     }
 
     public async Task SavePermanentAvatarAsync(Guid characterId, Stream imageStream)
@@ -95,15 +95,15 @@ public class AvatarService : IAvatarService
     
     private Size CalculateDimensions(string sizeKey, int multiplier)
     {
-        if (!_settings.BaseWidth.TryGetValue(sizeKey, out var baseWidth) || !_settings.AllowedMultipliers.Contains(multiplier))
+        if (!_options.BaseWidth.TryGetValue(sizeKey, out var baseWidth) || !_options.AllowedMultipliers.Contains(multiplier))
         {
             sizeKey = "m"; 
             multiplier = 1;
-            baseWidth = _settings.BaseWidth[sizeKey];
+            baseWidth = _options.BaseWidth[sizeKey];
         }
 
         int width = baseWidth * multiplier;
-        int height = (int)(width / _settings.AspectRatio);
+        int height = (int)(width / _options.AspectRatio);
         return new(width, height);
     }
 }

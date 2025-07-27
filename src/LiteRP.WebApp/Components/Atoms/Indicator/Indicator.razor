@@ -1,0 +1,62 @@
+﻿@using LiteRP.WebApp.Utilities
+
+<span class="@IndicatorClass" @attributes="AdditionalAttributes"></span>
+
+@code {
+    [Parameter] public IndicatorColor Color { get; set; } = IndicatorColor.Blue;
+    /// <summary>
+    /// Set null if you want to define the size manually
+    /// </summary>
+    [Parameter] public IndicatorSize? Size { get; set; } = IndicatorSize.Medium;
+    [Parameter] public IndicatorPlacement? Placement { get; set; } = null;
+    [Parameter] public string Class { get; set; } = string.Empty;
+    
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string IndicatorClass => new CssBuilder(Class)
+        .AddClass("rounded-full")
+        .AddClass(GetSizeClass())
+        .AddClass(GetColorClass())
+        .AddClass(GetPlacementClasses())
+        .Build();
+
+    private string GetPlacementClasses() => Placement switch
+    {
+        IndicatorPlacement.TopLeft => "absolute -translate-y-1/2 -translate-x-1/2 right-auto top-0 left-0",
+        IndicatorPlacement.TopCenter => "absolute -translate-y-1/2 translate-x-1/2 right-1/2",
+        IndicatorPlacement.TopRight => "absolute -translate-y-1/2 translate-x-1/2 left-auto top-0 right-0",
+        IndicatorPlacement.MiddleLeft => "absolute -translate-y-1/2 -translate-x-1/2 right-auto left-0 top-2/4",
+        IndicatorPlacement.MiddleCenter => "absolute -translate-y-1/2 -translate-x-1/2 top-2/4 left-1/2",
+        IndicatorPlacement.MiddleRight => "absolute -translate-y-1/2 translate-x-1/2 left-auto right-0 top-2/4",
+        IndicatorPlacement.BottomLeft => "absolute translate-y-1/2 -translate-x-1/2 right-auto bottom-0 left-0",
+        IndicatorPlacement.BottomCenter => "absolute translate-y-1/2 translate-x-1/2 bottom-0 right-1/2",
+        IndicatorPlacement.BottomRight => "absolute translate-y-1/2 translate-x-1/2 left-auto bottom-0 right-0",
+        _ => ""
+    };
+
+    private string GetSizeClass() => Size switch
+    {
+        IndicatorSize.ExtraSmall => "w-2 h-2",
+        IndicatorSize.Small => "w-2.5 h-2.5",
+        IndicatorSize.Medium => "w-3 h-3",
+        IndicatorSize.Large => "w-4 h-4",
+        IndicatorSize.ExtraLarge => "w-6 h-6",
+        null => string.Empty,
+        _ => "w-3 h-3"
+    };
+
+    private string GetColorClass() => Color switch
+    {
+        IndicatorColor.Gray => "bg-gray-200 dark:bg-gray-700",
+        IndicatorColor.Dark => "bg-gray-900 dark:bg-gray-700",
+        IndicatorColor.Blue => "bg-blue-600",
+        IndicatorColor.Green => "bg-green-500",
+        IndicatorColor.Red => "bg-red-500",
+        IndicatorColor.Purple => "bg-purple-500",
+        IndicatorColor.Indigo => "bg-indigo-500",
+        IndicatorColor.Yellow => "bg-yellow-300",
+        IndicatorColor.Teal => "bg-teal-500",
+        _ => "bg-gray-200"
+    };
+}

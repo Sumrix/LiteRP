@@ -1,10 +1,11 @@
 ﻿@page "/characters"
+@using Flowbite.Components
 @using Microsoft.Extensions.Options
 @inject IJSRuntime JS
 @inject ICharacterService CharacterService
 @inject IStringLocalizer<SharedResources> L
 @inject IToastService ToastService
-@inject IOptions<AvatarSettings> AvatarSettings
+@inject IOptions<AvatarOptions> AvatarSettings
 @inject IAvatarService AvatarService
 @inject ILorebookService LorebookService
 
@@ -15,7 +16,7 @@
     <h2 class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">@L["Characters"]</h2>
 
     <div>
-        <LrpButton @onclick="OpenPicker" Icon="Icons.UploadSolid" Class="w-full md:w-auto">
+        <LrpButton @onclick="OpenPicker" Icon="IconTypes.UploadSolid" Class="w-full md:w-auto" Variant="LrpButtonStyle.Filled">
             Add New Character
         </LrpButton>
 
@@ -63,7 +64,7 @@
      @ondragenter="HandleDragEnter" 
      @ondragleave="HandleDragLeave"
      @ondragover:preventDefault>
-    <InputFile OnChange="UploadCharacter" 
+    <InputFile OnChange="UploadCharacter"
                multiple 
                class="@($"absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20 {(_isDragOver ? "pointer-events-auto" : "pointer-events-none")}")" />
 
@@ -156,17 +157,17 @@
     {
         _dragCounter = 0;
         _isDragOver = false;
-
-        foreach (var file in e.GetMultipleFiles())
+        
+        try
         {
-            if (file.Size > AvatarSettings.Value.MaxAllowedUploadBytes)
+            foreach (var file in e.GetMultipleFiles(int.MaxValue))
             {
-                ToastService.ShowError($"File is too large (max {AvatarSettings.Value.MaxAllowedUploadMegabytes} MB)");
-                continue;
-            }
+                if (file.Size > AvatarSettings.Value.MaxAllowedUploadBytes)
+                {
+                    ToastService.ShowError($"File is too large (max {AvatarSettings.Value.MaxAllowedUploadMegabytes} MB)");
+                    continue;
+                }
 
-            try
-            {
                 await using var imageStream = file.OpenReadStream(maxAllowedSize: AvatarSettings.Value.MaxAllowedUploadBytes);
 
                 using var memoryStream = new MemoryStream();
@@ -200,14 +201,14 @@
                     await LorebookService.SaveLorebookAsync(parsedLorebook);
                 }
             }
-            catch (Exception ex)
-            {
-                ToastService.ShowError($"Error processing file: {ex.Message}");
-            }
-            finally
-            {
-                StateHasChanged();
-            }
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error processing file: {ex.Message}");
+        }
+        finally
+        {
+            StateHasChanged();
         }
     }
 

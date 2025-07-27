@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using LiteRP.Core.Enums;
 using LiteRP.Core.Exceptions;
 using LiteRP.Core.Helpers;
 using LiteRP.Core.Models;

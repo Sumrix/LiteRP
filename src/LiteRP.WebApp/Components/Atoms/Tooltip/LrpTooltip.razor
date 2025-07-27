@@ -1,0 +1,17 @@
+﻿<div class="@WrapperClasses"
+     @onclick="HandleClick"
+     @onfocusout="HandleFocusOut"
+     @onkeydown="HandleKeyDown"
+     tabindex="-1">
+    @ChildContent
+
+    <div class="@TooltipContainerClasses">
+        <div class="relative z-20">
+            @Content
+        </div>
+        @if (Arrow)
+        {
+            <div class="@ArrowClasses"></div>
+        }
+    </div>
+</div>
