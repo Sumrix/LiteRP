@@ -1,19 +1,19 @@
-﻿<div class="message">
-        @if (ChatMessage.Sender.SenderType == SenderType.Ai)
-        {
+﻿@using Markdig
+<div class="message">
+    @if (ChatMessage.Sender.SenderType == SenderType.Ai)
+    {
         <CharacterAvatar Character="@ChatMessage.Sender.AiCharacter" SizeToken="sm" Class="@ImageClasses" />
-        }
-        else
-        {
+    }
+    else
+    {
         <img src="img/avatar_placeholder_large.png" class="@ImageClasses" />
-        }
-    </div>
-    
+    }
+
     <div class="message__name font-semibold text-sm text-gray-900 dark:text-white">
         @ChatMessage.Sender.SenderName
-        </div>
+    </div>
     <div class="message__text chat-style-2 text-sm bg-gray-100 dark:bg-gray-700 rounded-lg p-3 text-gray-900 dark:text-white leading-relaxed space-y-2">
-        @ChatMessage.MessageText
+        @((MarkupString)_formattedMessage)
     </div>
 </div>
 
@@ -22,4 +22,21 @@
     public required ChatMessageViewModel ChatMessage { get; set; }
 
     private const string ImageClasses = "message__avatar rounded-md";
+
+    private string _formattedMessage = string.Empty;
+    private MarkdownPipeline? _pipeline;
+
+    protected override Task OnInitializedAsync()
+    {
+        _pipeline = new MarkdownPipelineBuilder()
+            .UseAdvancedExtensions()
+            .UseSoftlineBreakAsHardlineBreak()
+            .Build();
+        return base.OnInitializedAsync();
+    }
+
+    protected override void OnParametersSet()
+    {
+        _formattedMessage = Markdown.ToHtml(ChatMessage.MessageText, _pipeline);
+    }
 }

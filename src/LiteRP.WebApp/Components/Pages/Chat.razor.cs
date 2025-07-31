@@ -1,17 +1,19 @@
-﻿using LiteRP.Core.Entities;
+﻿using System.Text;
+using LiteRP.Core.Entities;
 using LiteRP.Core.Enums;
 using LiteRP.Core.Exceptions;
 using LiteRP.Core.Models;
 using LiteRP.WebApp.Helpers;
 using LiteRP.WebApp.ViewModels;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 namespace LiteRP.WebApp.Components.Pages;
 
 public partial class Chat : IDisposable
 {
+    [Inject] private IJSRuntime JS { get; set; } = null!;
+
     [Parameter, EditorRequired]
     public Guid CharacterIdForNewChat { get; set; }
 
@@ -20,10 +22,9 @@ public partial class Chat : IDisposable
     private ChatSession _chatSession = null!;
     private AppSettings _appSettings = null!;
 
-    private string _userInput = String.Empty;
+    private string _userInput = string.Empty;
     private CancellationTokenSource _messageGenerationCts = new();
     private bool _isAiResponding;
-    private bool _shouldPreventDefault;
 
     protected override async Task OnInitializedAsync()
     {
@@ -63,26 +64,13 @@ public partial class Chat : IDisposable
         await SendMessage();
     }
 
-    private async Task HandleKey(KeyboardEventArgs e)
-    {
-        if (e is { Key: "Enter", ShiftKey: false })
-        {
-            _shouldPreventDefault = true;
-            await SendMessage();
-        }
-        else
-        {
-            _shouldPreventDefault = false;
-        }
-    }
-
     private async Task SendMessage()
     {
         if (string.IsNullOrWhiteSpace(_userInput) && _chatMessageViewModels.Last().Sender.SenderType == SenderType.Ai
             || _isAiResponding) return;
 
         _messageGenerationCts = new();
-        var userMessage = _userInput;
+        var userMessage = ForceParagraphs(_userInput);
         _userInput = "";
 
         var aiResponseViewModel = PrepareUIForNewMessage(userMessage);
@@ -121,6 +109,23 @@ public partial class Chat : IDisposable
             _isAiResponding = false;
             StateHasChanged();
         }
+    }
+    
+    static string ForceParagraphs(string md)
+    {
+        var sb = new StringBuilder(md.Length + 16);
+        using var sr = new StringReader(md);
+        bool inFence = false;
+        string? line;
+        while ((line = sr.ReadLine()) is not null)
+        {
+            var trimmed = line.TrimStart();
+            if (trimmed.StartsWith("```")) inFence = !inFence;
+
+            sb.Append(line);
+            sb.Append(inFence ? '\n' : "\n\n");
+        }
+        return sb.ToString();
     }
 
     private ChatMessageViewModel PrepareUIForNewMessage(string userMessage)
@@ -180,7 +185,6 @@ public partial class Chat : IDisposable
         };
     }
 
-    [Inject] private IJSRuntime JS { get; set; } = null!;
     private async Task ScrollToBottom()
     {
         try

@@ -52,3 +52,21 @@ html, body {
     grid-column: 2;
     grid-row: 2;
 }
+
+@layer components {
+    .chat-style-1 em {
+        @apply italic text-gray-500 dark:text-gray-400;
+    }
+
+    .chat-style-1 strong {
+        @apply font-bold;
+    }
+
+    .chat-style-2 em {
+        @apply italic font-light text-gray-800 dark:text-gray-200;
+    }
+
+    .chat-style-2 strong {
+        @apply font-semibold text-primary-700 dark:text-primary-400;
+    }
+}

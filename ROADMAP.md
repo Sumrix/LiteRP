@@ -20,7 +20,7 @@ Minimum feature set for practical usage
 Feature-complete for public testing
 - [ ] Chat sidebar displaying conversation history
 - [x] **Stop generation** button
-- [ ] Markdown rendering in chat
+- [x] Markdown rendering in chat
 - [x] Character prompts using: `personality`, `scenario`, `mes_example`
 - [x] Back-end connection status indicator
 - [x] Automatic settings saving
