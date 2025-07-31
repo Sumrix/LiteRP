@@ -8,16 +8,16 @@
 
 <PageTitle>LiteRP - Chat with @_character?.Name</PageTitle>
 
-<div class="max-w-4xl mx-auto" style="max-width: 90ch;">
+<div class="max-w-3xl mx-auto">
     
-    <div id="chat-container" class="d-flex flex-column flex-grow-1 p-4 space-y-6 pb-32" style="overflow-y: auto;">
+    <div id="chat-container" class="d-flex flex-column flex-grow-1 space-y-3 pb-32" style="overflow-y: auto;">
         @foreach (var message in _chatMessageViewModels)
         {
             <ChatMessageView ChatMessage="message" />
         }
     </div>
 
-    <div class="fixed bottom-6 left-0 right-0 md:left-64 mx-auto max-w-[90ch] items-end gap-2">
+    <div class="max-w-3xl mx-auto fixed bottom-6 left-0 right-0 md:left-64 items-end gap-2">
         <div class="relative">
             <LrpInput TValue="string"
                       id="chat-input"

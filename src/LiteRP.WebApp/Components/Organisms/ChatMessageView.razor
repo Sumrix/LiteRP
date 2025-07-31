@@ -1,24 +1,25 @@
-﻿<div class="flex space-x-4 rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
-    <div class="w-16 h-16 rounded-full object-cover overflow-hidden shrink-0">
+﻿<div class="message">
         @if (ChatMessage.Sender.SenderType == SenderType.Ai)
         {
-            <CharacterAvatar Character="@ChatMessage.Sender.AiCharacter" SizeToken="s" />
+        <CharacterAvatar Character="@ChatMessage.Sender.AiCharacter" SizeToken="sm" Class="@ImageClasses" />
         }
         else
         {
-            <img src="img/avatar_placeholder_large.png"/>
+        <img src="img/avatar_placeholder_large.png" class="@ImageClasses" />
         }
     </div>
     
-    <div class="flex flex-col items-start space-y-4 mb-4">
-        <div class="font-bold text-lg text-gray-900 dark:text-white">@ChatMessage.Sender.SenderName</div>
-        <div class="text-gray-800 dark:text-gray-300 whitespace-pre-wrap">
-            @ChatMessage.MessageText
+    <div class="message__name font-semibold text-sm text-gray-900 dark:text-white">
+        @ChatMessage.Sender.SenderName
         </div>
+    <div class="message__text chat-style-2 text-sm bg-gray-100 dark:bg-gray-700 rounded-lg p-3 text-gray-900 dark:text-white leading-relaxed space-y-2">
+        @ChatMessage.MessageText
     </div>
 </div>
 
 @code {
     [Parameter, EditorRequired]
     public required ChatMessageViewModel ChatMessage { get; set; }
+
+    private const string ImageClasses = "message__avatar rounded-md";
 }

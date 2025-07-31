@@ -1,9 +1,10 @@
-﻿@using Microsoft.Extensions.Options
-@inherits FlowbiteComponentBase
+﻿@using LiteRP.WebApp.Utilities
+@using Microsoft.Extensions.Options
+@inject IOptions<AvatarOptions> AvatarSettings
 
 @if (Character is { HasAvatar: true })
 {
-    <img class="@_imageClasses"
+    <img class="@ImageClasses"
          src="@_src"
          srcset="@_srcSet"
          loading="lazy"
@@ -11,7 +12,7 @@
 }
 else
 {
-    <img class="@_imageClasses"
+    <img class="@ImageClasses"
          src="@UrlManager.AvatarPlaceholderUrl"
          loading="lazy" 
          @attributes="AdditionalAttributes"/>
@@ -23,22 +24,24 @@ else
     public Character? Character { get; set; }
 
     /// <summary>
-    /// Avatar size token ("s", "m", "l").
+    /// Avatar size token (sm, md, lg, xl).
     /// </summary>
     [Parameter, EditorRequired]
     public required string SizeToken { get; set; }
 
+    [Parameter]
+    public string Class { get; set; } = string.Empty;
+
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
-    [Inject]
-    public required IOptions<AvatarOptions> AvatarSettings { get; set; }
 
     private string _baseUrl = string.Empty;
     private string _src = string.Empty;
     private string _srcSet = string.Empty;
 
-    private string _imageClasses => CombineClasses("w-full h-full object-cover");
+    private string ImageClasses => new CssBuilder("w-full h-full object-cover")
+        .AddClass(Class)
+        .Build();
 
     protected override void OnParametersSet()
     {
