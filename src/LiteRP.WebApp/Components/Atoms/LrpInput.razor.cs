@@ -12,6 +12,7 @@ public partial class LrpInput<TValue> : IAsyncDisposable
 {
     protected string WrapperClasses => new CssBuilder("relative flex")
         .AddClass(CssClass)
+        .AddClass(Class)
         .Build();
 
     protected const string IconClasses = "w-5 h-5 text-gray-500 dark:text-gray-400";
@@ -31,7 +32,7 @@ public partial class LrpInput<TValue> : IAsyncDisposable
         .Build();
 
     protected string InputClasses => new CssBuilder("block w-full border disabled:cursor-not-allowed disabled:opacity-50")
-            .AddClass(CssClass)
+            .AddClass(InputClass)
             // Size
             .AddClass(Size switch {
                 TextInputSize.Small => "py-2 text-sm",
@@ -44,14 +45,7 @@ public partial class LrpInput<TValue> : IAsyncDisposable
             .AddClass("pr-10", GetRightContentState())
             .AddClass("pr-2.5", !GetRightContentState())
             // Color
-            .AddClass(GetEffectiveColor() switch {
-                TextInputColor.Gray => " border-gray-300 bg-gray-50 text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500",
-                TextInputColor.Success => "border-green-500 bg-green-50 text-green-900 placeholder-green-700 focus:border-green-500 focus:ring-green-500 dark:border-green-400 dark:bg-green-100 dark:focus:border-green-500 dark:focus:ring-green-500",
-                TextInputColor.Failure => "border-red-500 bg-red-50 text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-400 dark:bg-red-100 dark:focus:border-red-500 dark:focus:ring-red-500",
-                TextInputColor.Warning => "border-yellow-500 bg-yellow-50 text-yellow-900 placeholder-yellow-700 focus:border-yellow-500 focus:ring-yellow-500 dark:border-yellow-400 dark:bg-yellow-100 dark:focus:border-yellow-500 dark:focus:ring-yellow-500",
-                TextInputColor.Info => "border-primary-500 bg-primary-50 text-primary-900 placeholder-primary-700 focus:border-primary-500 focus:ring-primary-500 dark:border-primary-400 dark:bg-primary-100 dark:focus:border-primary-500 dark:focus:ring-primary-500",
-                _ => string.Empty
-            })
+            .AddClass(GetColorClasses())
             // Border radius based on addons
             .AddClass("rounded-lg", !GetLeftAddonState() && !GetRightAddonState())
             .AddClass("rounded-r-lg border-l-0", GetLeftAddonState() && !GetRightAddonState())
@@ -104,7 +98,10 @@ public partial class LrpInput<TValue> : IAsyncDisposable
     [Parameter] public int Lines { get; set; } = 1;
     [Parameter] public bool AutoGrow { get; set; }
     [Parameter] public int MaxLines { get; set; }
+    [Parameter] public LrpInputVariant Variant { get; set; } = LrpInputVariant.Grey;
     [Parameter] public string InputType { get; set; } = "text";
+    [Parameter] public string Class { get; set; } = string.Empty;
+    [Parameter] public string InputClass { get; set; } = string.Empty;
     
     protected TextInputColor GetEffectiveColor()
     {
@@ -123,6 +120,34 @@ public partial class LrpInput<TValue> : IAsyncDisposable
     protected bool GetRightAddonState() => !string.IsNullOrEmpty(AddonRight);
 
     protected bool GetClearButtonState() => Clearable && !string.IsNullOrEmpty(CurrentValueAsString);
+
+    protected string GetColorClasses()
+    {
+        var color = GetEffectiveColor();
+
+        if (Variant == LrpInputVariant.White)
+        {
+            return color switch
+            {
+                TextInputColor.Gray => "bg-white text-gray-900 border-gray-300 focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500",
+                TextInputColor.Success => "bg-white text-green-900 placeholder-green-700 border-green-500 focus:border-green-500 focus:ring-green-500 dark:bg-gray-800 dark:text-green-500 dark:placeholder-green-500 dark:border-green-500 dark:focus:ring-green-500",
+                TextInputColor.Failure => "bg-white text-red-900 placeholder-red-700 border-red-500 focus:border-red-500 focus:ring-red-500 dark:bg-gray-800 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500 dark:focus:ring-red-500",
+                TextInputColor.Warning => "bg-white text-yellow-900 placeholder-yellow-700 border-yellow-500 focus:border-yellow-500 focus:ring-yellow-500 dark:bg-gray-800 dark:text-yellow-500 dark:placeholder-yellow-500 dark:border-yellow-500 dark:focus:ring-yellow-500",
+                TextInputColor.Info => "bg-white text-primary-900 placeholder-primary-700 border-primary-500 focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-800 dark:text-primary-500 dark:placeholder-primary-500 dark:border-primary-500 dark:focus:ring-primary-500",
+                _ => string.Empty
+            };
+        }
+        
+        return color switch
+        {
+            TextInputColor.Gray => "border-gray-300 bg-gray-50 text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500",
+            TextInputColor.Success => "border-green-500 bg-green-50 text-green-900 placeholder-green-700 focus:border-green-500 focus:ring-green-500 dark:border-green-400 dark:bg-green-100 dark:focus:border-green-500 dark:focus:ring-green-500",
+            TextInputColor.Failure => "border-red-500 bg-red-50 text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500 dark:border-red-400 dark:bg-red-100 dark:focus:border-red-500 dark:focus:ring-red-500",
+            TextInputColor.Warning => "border-yellow-500 bg-yellow-50 text-yellow-900 placeholder-yellow-700 focus:border-yellow-500 focus:ring-yellow-500 dark:border-yellow-400 dark:bg-yellow-100 dark:focus:border-yellow-500 dark:focus:ring-yellow-500",
+            TextInputColor.Info => "border-primary-500 bg-primary-50 text-primary-900 placeholder-primary-700 focus:border-primary-500 focus:ring-primary-500 dark:border-primary-400 dark:bg-primary-100 dark:focus:border-primary-500 dark:focus:ring-primary-500",
+            _ => string.Empty
+        };
+    }
 
     protected override void OnInitialized()
     {

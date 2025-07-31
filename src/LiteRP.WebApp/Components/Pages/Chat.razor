@@ -19,16 +19,23 @@
 
     <div class="fixed bottom-6 left-0 right-0 md:left-64 mx-auto max-w-[90ch] items-end gap-2">
         <div class="relative">
-            @*field-sizing is not available in some browsers*@
-            <textarea class="block p-2.5 pr-14 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 
-                             dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                      @bind="_userInput"
-                      placeholder="Write a message..."
-                      rows="4"
-                      role="textbox"
-                      @bind:event="oninput"
-                      @onkeypress="HandleKey"/>
-            <LrpButton Icon="IconTypes.PaperPlane" Class="absolute bottom-2 right-2" OnClick="SendMessage"/>
+            <LrpInput TValue="string"
+                      id="chat-input"
+                      @bind-Value="_userInput"
+                      Placeholder="Write a message.."
+                      Lines="1"
+                      MaxLines="20"
+                      AutoGrow
+                      Variant="LrpInputVariant.White"
+                      InputClass="chat-input"/>
+            @if (_isAiResponding)
+            {
+                <LrpButton Icon="IconTypes.StopSolid" Class="absolute bottom-3.5 right-3" OnClick="StopResponding"/>
+            }
+            else
+            {
+                <LrpButton Icon="IconTypes.PaperPlane" Class="absolute bottom-3.5 right-3" OnClick="SendMessage"/>
+            }
         </div>
     </div>
 </div>

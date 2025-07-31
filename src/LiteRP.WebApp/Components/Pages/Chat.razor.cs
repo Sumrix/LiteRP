@@ -2,6 +2,7 @@
 using LiteRP.Core.Enums;
 using LiteRP.Core.Exceptions;
 using LiteRP.Core.Models;
+using LiteRP.WebApp.Helpers;
 using LiteRP.WebApp.ViewModels;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -15,11 +16,14 @@ public partial class Chat : IDisposable
     public Guid CharacterIdForNewChat { get; set; }
 
     private List<ChatMessageViewModel> _chatMessageViewModels = [];
-    private string _userInput = String.Empty;
     private Character _character = null!;
     private ChatSession _chatSession = null!;
-    private readonly CancellationTokenSource _cts = new();
     private AppSettings _appSettings = null!;
+
+    private string _userInput = String.Empty;
+    private CancellationTokenSource _messageGenerationCts = new();
+    private bool _isAiResponding;
+    private bool _shouldPreventDefault;
 
     protected override async Task OnInitializedAsync()
     {
@@ -43,47 +47,57 @@ public partial class Chat : IDisposable
                 .ToList();
         }
     }
-    
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+           var dotNetObjectReference = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsyncWithErrorHandling("LiteRP.submitOnEnter", "chat-input", dotNetObjectReference);
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnSubmitFromJs()
+    {
+        await SendMessage();
+    }
+
     private async Task HandleKey(KeyboardEventArgs e)
     {
         if (e is { Key: "Enter", ShiftKey: false })
         {
+            _shouldPreventDefault = true;
             await SendMessage();
+        }
+        else
+        {
+            _shouldPreventDefault = false;
         }
     }
 
     private async Task SendMessage()
     {
-        if (string.IsNullOrWhiteSpace(_userInput)) return;
+        if (string.IsNullOrWhiteSpace(_userInput) && _chatMessageViewModels.Last().Sender.SenderType == SenderType.Ai
+            || _isAiResponding) return;
 
-        _chatMessageViewModels.Add(ChatMessageViewModel.UserMessage(_appSettings.UserName, _userInput));
+        _messageGenerationCts = new();
+        var userMessage = _userInput;
+        _userInput = "";
 
-        var aiResponse = ChatMessageViewModel.AiMessage("", _character);
-        _chatMessageViewModels.Add(aiResponse);
+        var aiResponseViewModel = PrepareUIForNewMessage(userMessage);
+        var wasMessagePopulated = false;
 
-        StateHasChanged();
-        await ScrollToBottom();
-
-        try 
+        try
         {
-            var stream = _chatSession.GetStreamingResponseAsync(_userInput, _cts.Token);
-            _userInput = "";
-            
-            StateHasChanged();
-            await ScrollToBottom();
-
-            await foreach (var chunk in stream.WithCancellation(_cts.Token))
-            {
-                aiResponse.MessageText += chunk;
-                StateHasChanged();
-                await ScrollToBottom();
-            }
+            wasMessagePopulated = await StreamAndDisplayAiResponseAsync(userMessage, aiResponseViewModel, _messageGenerationCts.Token);
         }
         catch (ChatSessionException ex)
         {
+            _chatMessageViewModels.Remove(aiResponseViewModel);
             var errorMessage = GetUserFriendlyErrorMessage(ex.ErrorCode);
             Logger.LogError(ex, "ChatSessionException: {ErrorMessage}", errorMessage);
-            ToastService.ShowError(errorMessage);
+            ToastService.ShowError(errorMessage, 10000);
         }
         catch (OperationCanceledException)
         {
@@ -91,14 +105,68 @@ public partial class Chat : IDisposable
         }
         catch (Exception ex)
         {
+            _chatMessageViewModels.Remove(aiResponseViewModel);
             const string errorMessage = "An unexpected error occurred. Please try again later.";
             Logger.LogError(ex, "UnexpectedException: {ErrorMessage}", errorMessage);
-            ToastService.ShowError(errorMessage);
+            ToastService.ShowError(errorMessage, 10000);
         }
         finally
         {
+            // If the operation was cancelled BUT no content was ever received, remove the placeholder.
+            if (!wasMessagePopulated)
+            {
+                _chatMessageViewModels.Remove(aiResponseViewModel);
+            }
+
+            _isAiResponding = false;
             StateHasChanged();
         }
+    }
+
+    private ChatMessageViewModel PrepareUIForNewMessage(string userMessage)
+    {
+        _isAiResponding = true;
+
+        if (!string.IsNullOrWhiteSpace(userMessage))
+            _chatMessageViewModels.Add(ChatMessageViewModel.UserMessage(_appSettings.UserName, userMessage));
+    
+        // Create the placeholder for the AI's response
+        var aiResponseViewModel = ChatMessageViewModel.AiMessage("", _character);
+        _chatMessageViewModels.Add(aiResponseViewModel);
+    
+        StateHasChanged();
+
+        // Return the placeholder so we can track it
+        return aiResponseViewModel;
+    }
+
+    private async Task<bool> StreamAndDisplayAiResponseAsync(string userMessage, ChatMessageViewModel aiResponseViewModel, CancellationToken token)
+    {
+        await ScrollToBottom();
+
+        var stream = _chatSession.GetStreamingResponseAsync(userMessage, token);
+        var hasReceivedAnyChunks = false;
+
+        await foreach (var chunk in stream)
+        {
+            // As soon as we get the first chunk, set the flag.
+            if (!hasReceivedAnyChunks)
+            {
+                hasReceivedAnyChunks = true;
+            }
+
+            aiResponseViewModel.MessageText += chunk;
+            StateHasChanged();
+            await ScrollToBottom();
+        }
+
+        // Return true if we added any content to the message.
+        return hasReceivedAnyChunks;
+    }
+
+    private void StopResponding()
+    {
+        _messageGenerationCts.Cancel();
     }
 
     private static string GetUserFriendlyErrorMessage(ChatSessionError code)
@@ -128,8 +196,8 @@ public partial class Chat : IDisposable
 
     public void Dispose()
     {
-        _cts.Cancel();
-        _cts.Dispose();
+        _messageGenerationCts.Cancel();
+        _messageGenerationCts.Dispose();
         GC.SuppressFinalize(this);
     }
 }

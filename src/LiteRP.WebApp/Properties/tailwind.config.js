@@ -2,8 +2,9 @@
 module.exports = {
     content: [
         "../wwwroot/**/*.{razor,html,cshtml,cs}",
-        "../Components/*.{razor,html,cshtml,cs}",
-        "../Components/**/*.{razor,html,cshtml,cs}"
+        "../Components/*.{razor,html,cshtml,cs,css}",
+        "../Components/**/*.{razor,html,cshtml,cs,css}",
+        "../Components/**/**/*.{razor,html,cshtml,cs,css}"
     ],
     darkMode: 'class',
     safelist: [

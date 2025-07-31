@@ -94,7 +94,6 @@ public class ChatSession
 
     private static string ReplacePlaceholders(string text, string charName, string userName)
     {
-        // Using a case-insensitive replace is more robust.
         return text
             .Replace("{{char}}", charName, StringComparison.InvariantCultureIgnoreCase)
             .Replace("<BOT>", charName, StringComparison.InvariantCultureIgnoreCase)
@@ -106,7 +105,8 @@ public class ChatSession
         string userInput,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _history.AddUserMessage(userInput);
+        if (!string.IsNullOrWhiteSpace(userInput))
+            _history.AddUserMessage(userInput);
 
         // We need to get new settings each time, because they might change during ChatSession lifetime.
         var settings = await _settingsService.GetSettingsAsync();

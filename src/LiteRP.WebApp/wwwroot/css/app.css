@@ -19,3 +19,10 @@ html, body {
 .aspect-2\/3 {
     aspect-ratio: 2 / 3;
 }
+
+.chat-input {
+    padding-inline: 2rem 4rem;
+    padding-block: 1.5rem;
+    scrollbar-width: thin;
+    border-radius: 16px;
+}
