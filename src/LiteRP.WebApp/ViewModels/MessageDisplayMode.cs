@@ -4,6 +4,6 @@ public enum MessageDisplayMode
 {
     Thinking,
     Streaming,
-    Editing,
+    //Editing,
     Ready
 }

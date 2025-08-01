@@ -148,7 +148,8 @@ public partial class Chat : IDisposable
             {
                 _chatMessageViewModels.Remove(aiResponseViewModel);
             }
-
+            
+            aiResponseViewModel.Mode = MessageDisplayMode.Ready;
             _isAiResponding = false;
             StateHasChanged();
         }
@@ -163,6 +164,7 @@ public partial class Chat : IDisposable
     
         // Create the placeholder for the AI's response
         var aiResponseViewModel = ChatMessageViewModel.AiMessage("", _character);
+        aiResponseViewModel.Mode = MessageDisplayMode.Thinking;
         _chatMessageViewModels.Add(aiResponseViewModel);
     
         StateHasChanged();
@@ -180,6 +182,9 @@ public partial class Chat : IDisposable
 
         await foreach (var chunk in stream)
         {
+            if (aiResponseViewModel.Mode == MessageDisplayMode.Thinking)
+                aiResponseViewModel.Mode = MessageDisplayMode.Streaming;
+
             // As soon as we get the first chunk, set the flag.
             if (!hasReceivedAnyChunks)
             {

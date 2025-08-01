@@ -13,7 +13,20 @@
         @ChatMessage.Sender.SenderName
     </div>
     <div class="message__text chat-style-2 text-sm bg-gray-100 dark:bg-gray-700 rounded-lg p-3 text-gray-900 dark:text-white leading-relaxed space-y-2">
-        @((MarkupString)_formattedMessage)
+        
+        @switch (ChatMessage.Mode)
+        {
+            case MessageDisplayMode.Thinking:
+                <div class="thinking-dots">
+                    <span></span><span></span><span></span>
+                </div>
+                break;
+            case MessageDisplayMode.Streaming:
+            case MessageDisplayMode.Ready:
+                @((MarkupString)_formattedMessage)
+                break;
+        }
+        
     </div>
 </div>
 
