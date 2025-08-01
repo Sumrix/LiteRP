@@ -115,11 +115,13 @@
 
     private bool _showGuide;
     private bool _isValid;
+    private ConnectionStatus _status;
 
     protected override async Task OnInitializedAsync()
     {
-        OllamaStatusService.StatusChanged += async () => await InvokeAsync(StateHasChanged);
+        OllamaStatusService.StatusChanged += HandleOllamaStatusChanged;
         OllamaStatusService.StartMonitoring(this);
+        _status = OllamaStatusService.Status;
 
         AppSettings = await SettingsService.GetSettingsAsync();
         _showGuide = AppSettings.ShowSettingsGuide;
@@ -167,9 +169,24 @@
         await SaveSettings();
     }
 
+    private void HandleOllamaStatusChanged(ConnectionStatus status)
+    {
+        var oldStatus = _status;
+
+        if (_status != ConnectionStatus.Success || status != ConnectionStatus.Connecting)
+        {
+            _status = status;
+        }
+        
+        if (oldStatus != _status)
+        {
+            InvokeAsync(StateHasChanged).CatchAndLog();
+        }
+    }
+
     public void Dispose()
     {
         OllamaStatusService.StopMonitoring(this);
-        OllamaStatusService.StatusChanged -= StateHasChanged;
+        OllamaStatusService.StatusChanged -= HandleOllamaStatusChanged;
     }
 }

@@ -53,6 +53,7 @@
     private string _buttonClass = null!;
 
     private string FinalCssClass => new CssBuilder(_alertClass)
+        .AddClass(Class)
         .AddClass("transition-opacity ease-out")
         .AddClass("opacity-100", when: _isVisible)
         .AddClass("opacity-0", when: !_isVisible)
@@ -73,6 +74,7 @@
     [Parameter] public bool ShowAccent { get; set; }
     [Parameter] public int TransitionDuration { get; set; } = 300;
     [Parameter] public EventCallback OnDismiss { get; set; }
+    [Parameter] public string Class { get; set; }
 
     private record AlertColorStyles(string Text, string Background, string Border, string Button, string FocusRing);
 

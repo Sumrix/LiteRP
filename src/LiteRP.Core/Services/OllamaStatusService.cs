@@ -24,8 +24,7 @@ public class OllamaStatusService : IDisposable
     private readonly HashSet<object> _subscribers = [];
 
     public ConnectionStatus Status { get; private set; } = ConnectionStatus.Unknown;
-
-    public event Action? StatusChanged;
+    public event Action<ConnectionStatus>? StatusChanged;
     public IReadOnlyList<Model> Models = [];
 
     public OllamaStatusService(
@@ -119,7 +118,7 @@ public class OllamaStatusService : IDisposable
         }
 
         Status = newStatus;
-        StatusChanged?.Invoke();
+        StatusChanged?.Invoke(newStatus);
     }
 
     public void Dispose()

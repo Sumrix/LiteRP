@@ -1,10 +1,13 @@
 ﻿@page "/chat/new/{CharacterIdForNewChat:guid}"
+@using LiteRP.Core.Enums
+@using LiteRP.Core.Services
 @inject IChatSessionService ChatSessionService
 @inject IToastService ToastService
 @inject ICharacterService CharacterService
 @inject ILogger<Chat> Logger
 @inject NavigationManager Nav
 @inject ISettingsService SettingsService
+@inject OllamaStatusService OllamaStatusService
 
 <PageTitle>LiteRP - Chat with @_character?.Name</PageTitle>
 
@@ -18,9 +21,18 @@
     </div>
 
     <div class="max-w-3xl mx-auto fixed bottom-6 left-0 right-0 md:left-64 items-end gap-2">
+    
+        @if (!_isAiConnected)
+        {
+            <LrpAlert Color="AlertColor.Danger" Class="mb-2">
+                <HeaderContent>
+                    Could not connect to the AI server. Please check your settings and ensure the server is running.
+                </HeaderContent>
+            </LrpAlert>
+        }
         <div class="relative">
             <LrpInput TValue="string"
-                      id="chat-input"
+                      id="@InputId"
                       @bind-Value="_userInput"
                       Placeholder="Write a message.."
                       Lines="1"
@@ -34,7 +46,8 @@
             }
             else
             {
-                <LrpButton Icon="IconTypes.PaperPlane" Class="absolute bottom-3.5 right-3" OnClick="SendMessage"/>
+                <LrpButton Icon="IconTypes.PaperPlane" Class="absolute bottom-3.5 right-3" OnClick="SendMessage"
+                           Disabled="!_isAiConnected" />
             }
         </div>
     </div>

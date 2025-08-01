@@ -156,6 +156,13 @@ public class ChatSession
                     $"Failed to connect to Ollama at {settings.OllamaUrl}",
                     ex);
             }
+            catch (HttpIOException ex) when(ex.HttpRequestError == HttpRequestError.ResponseEnded)
+            {
+                throw new ChatSessionException(
+                    ChatSessionError.ResponseInterrupted,
+                    "The response started but was cut off mid-stream.",
+                    ex);
+            }
 
             if (!string.IsNullOrEmpty(content.Content))
             {

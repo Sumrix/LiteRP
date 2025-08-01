@@ -1,5 +1,4 @@
-﻿using System.Text;
-using LiteRP.Core.Entities;
+﻿using LiteRP.Core.Entities;
 using LiteRP.Core.Enums;
 using LiteRP.Core.Exceptions;
 using LiteRP.Core.Models;
@@ -12,7 +11,8 @@ namespace LiteRP.WebApp.Components.Pages;
 
 public partial class Chat : IDisposable
 {
-    [Inject] private IJSRuntime JS { get; set; } = null!;
+    [Inject]
+    private IJSRuntime JS { get; set; } = null!;
 
     [Parameter, EditorRequired]
     public Guid CharacterIdForNewChat { get; set; }
@@ -21,13 +21,18 @@ public partial class Chat : IDisposable
     private Character _character = null!;
     private ChatSession _chatSession = null!;
     private AppSettings _appSettings = null!;
-
+    
+    private const string InputId = "chat-input";
     private string _userInput = string.Empty;
     private CancellationTokenSource _messageGenerationCts = new();
     private bool _isAiResponding;
+    private bool _isAiConnected;
 
     protected override async Task OnInitializedAsync()
     {
+        OllamaStatusService.StatusChanged += HandleOllamaStatusChanged;
+        OllamaStatusService.StartMonitoring(this);
+        _isAiConnected = OllamaStatusService.Status != ConnectionStatus.Failed;
         _appSettings = await SettingsService.GetSettingsAsync();
     }
 
@@ -54,7 +59,32 @@ public partial class Chat : IDisposable
         if (firstRender)
         {
            var dotNetObjectReference = DotNetObjectReference.Create(this);
-            await JS.InvokeVoidAsyncWithErrorHandling("LiteRP.submitOnEnter", "chat-input", dotNetObjectReference);
+            await JS.InvokeVoidAsyncWithErrorHandling("LiteRP.submitOnEnter", InputId, dotNetObjectReference);
+        }
+    }
+
+    private void HandleOllamaStatusChanged(ConnectionStatus status)
+    {
+        var oldIsAiConnected = _isAiConnected;
+
+        if (_isAiConnected)
+        {
+            if (status is ConnectionStatus.Failed or ConnectionStatus.Unknown)
+            {
+                _isAiConnected = false;
+            }
+        }
+        else
+        {
+            if (status is ConnectionStatus.Success)
+            {
+                _isAiConnected = true;
+            }
+        }
+
+        if (oldIsAiConnected != _isAiConnected)
+        {
+            InvokeAsync(StateHasChanged).CatchAndLog();
         }
     }
 
@@ -66,11 +96,14 @@ public partial class Chat : IDisposable
 
     private async Task SendMessage()
     {
-        if (string.IsNullOrWhiteSpace(_userInput) && _chatMessageViewModels.Last().Sender.SenderType == SenderType.Ai
-            || _isAiResponding) return;
+        if (string.IsNullOrWhiteSpace(_userInput) &&
+            _chatMessageViewModels.Last().Sender.SenderType == SenderType.Ai ||
+            _isAiResponding ||
+            !_isAiConnected)
+            return;
 
         _messageGenerationCts = new();
-        var userMessage = ForceParagraphs(_userInput);
+        var userMessage = _userInput;
         _userInput = "";
 
         var aiResponseViewModel = PrepareUIForNewMessage(userMessage);
@@ -78,13 +111,23 @@ public partial class Chat : IDisposable
 
         try
         {
-            wasMessagePopulated = await StreamAndDisplayAiResponseAsync(userMessage, aiResponseViewModel, _messageGenerationCts.Token);
+            wasMessagePopulated =
+                await StreamAndDisplayAiResponseAsync(userMessage, aiResponseViewModel, _messageGenerationCts.Token);
         }
         catch (ChatSessionException ex)
         {
             _chatMessageViewModels.Remove(aiResponseViewModel);
             var errorMessage = GetUserFriendlyErrorMessage(ex.ErrorCode);
             Logger.LogError(ex, "ChatSessionException: {ErrorMessage}", errorMessage);
+            await OllamaStatusService.TriggerCheckAsync();
+            ToastService.ShowError(errorMessage, 10000);
+        }
+        catch (HttpIOException ex) when(ex.HttpRequestError == HttpRequestError.ResponseEnded)
+        {
+            _chatMessageViewModels.Remove(aiResponseViewModel);
+            const string errorMessage = "An unexpected error occurred. Please try again later.";
+            Logger.LogError(ex, "UnexpectedException: {ErrorMessage}", errorMessage);
+            await OllamaStatusService.TriggerCheckAsync();
             ToastService.ShowError(errorMessage, 10000);
         }
         catch (OperationCanceledException)
@@ -109,23 +152,6 @@ public partial class Chat : IDisposable
             _isAiResponding = false;
             StateHasChanged();
         }
-    }
-    
-    static string ForceParagraphs(string md)
-    {
-        var sb = new StringBuilder(md.Length + 16);
-        using var sr = new StringReader(md);
-        bool inFence = false;
-        string? line;
-        while ((line = sr.ReadLine()) is not null)
-        {
-            var trimmed = line.TrimStart();
-            if (trimmed.StartsWith("```")) inFence = !inFence;
-
-            sb.Append(line);
-            sb.Append(inFence ? '\n' : "\n\n");
-        }
-        return sb.ToString();
     }
 
     private ChatMessageViewModel PrepareUIForNewMessage(string userMessage)
@@ -180,6 +206,7 @@ public partial class Chat : IDisposable
         {
             ChatSessionError.ConfigurationMissing => "AI settings are not configured. Please go to the settings page to set the Ollama URL and model name.",
             ChatSessionError.ConnectionFailed => "Could not connect to the AI server. Please check your settings and ensure the server is running.",
+            ChatSessionError.ResponseInterrupted => "The AI's response was interrupted. Please check Ollama server status and try again.",
             ChatSessionError.ModelNotAvailable => "The selected AI model is not available on the server.",
             _ => "An unknown error occurred with the AI service."
         };
@@ -202,6 +229,8 @@ public partial class Chat : IDisposable
     {
         _messageGenerationCts.Cancel();
         _messageGenerationCts.Dispose();
+        OllamaStatusService.StopMonitoring(this);
+        OllamaStatusService.StatusChanged -= HandleOllamaStatusChanged;
         GC.SuppressFinalize(this);
     }
 }
