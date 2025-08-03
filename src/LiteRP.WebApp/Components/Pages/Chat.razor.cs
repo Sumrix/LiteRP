@@ -11,8 +11,7 @@ namespace LiteRP.WebApp.Components.Pages;
 
 public partial class Chat : IAsyncDisposable
 {
-    [Inject]
-    private IJSRuntime JS { get; set; } = null!;
+    [Inject] private IJSRuntime JS { get; set; } = null!;
 
     [Parameter] public Guid? CharacterIdForNewChat { get; set; }
     [Parameter] public Guid? ChatSessionId { get; set; }
@@ -44,9 +43,6 @@ public partial class Chat : IAsyncDisposable
 
     protected override async Task OnParametersSetAsync()
     {
-        //if (_chatMessageViewModels.Count == 1)
-        //    await ChatSessionService.DeleteSessionAsync(_chatSession.Id);
-
         if (ChatSessionId.HasValue)
         {
             var chatSession = await ChatSessionService.LoadSessionAsync(ChatSessionId.Value);
@@ -82,7 +78,9 @@ public partial class Chat : IAsyncDisposable
     {
         if (firstRender)
         {
-           var dotNetObjectReference = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("LiteRP.autoScroll.start", "main-content");
+            
+            var dotNetObjectReference = DotNetObjectReference.Create(this);
             await JS.InvokeVoidAsyncWithErrorHandling("LiteRP.submitOnEnter", InputId, dotNetObjectReference);
         }
     }
@@ -196,8 +194,6 @@ public partial class Chat : IAsyncDisposable
 
     private async Task<bool> StreamAndDisplayAiResponseAsync(string userMessage, ChatMessageViewModel aiResponseViewModel, CancellationToken token)
     {
-        await ScrollToBottom();
-
         var stream = _chatSession.GetStreamingResponseAsync(userMessage, token);
         var hasReceivedAnyChunks = false;
 
@@ -214,7 +210,6 @@ public partial class Chat : IAsyncDisposable
 
             aiResponseViewModel.MessageText += chunk;
             StateHasChanged();
-            await ScrollToBottom();
         }
 
         // Return true if we added any content to the message.
@@ -238,27 +233,16 @@ public partial class Chat : IAsyncDisposable
         };
     }
 
-    private async Task ScrollToBottom()
-    {
-        try
-        {
-            await JS.InvokeVoidAsync("LiteRP.scrollToBottom");
-        }
-        catch (Exception ex)
-        {
-            // We don't want it to crash the app. The user can just scroll manually.
-            Logger.LogWarning(ex, "Failed to scroll to bottom.");
-        }
-    }
-
     public async ValueTask DisposeAsync()
     {
+        await JS.InvokeVoidAsync("LiteRP.autoScroll.stop");
+
         await _messageGenerationCts.CancelAsync();
         _messageGenerationCts.Dispose();
+
         OllamaStatusService.StopMonitoring(this);
         OllamaStatusService.StatusChanged -= HandleOllamaStatusChanged;
-        //if (_chatMessageViewModels.Count == 1)
-        //    await ChatSessionService.DeleteSessionAsync(_chatSession.Id);
+
         GC.SuppressFinalize(this);
     }
 }

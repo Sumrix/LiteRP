@@ -18,22 +18,23 @@ Minimum feature set for practical usage
 
 ## v0.3 — Ready to use, early beta
 Feature-complete for public testing
-- [ ] Chat sidebar displaying conversation history
-- [x] **Stop generation** button
+- [x] Chat sidebar displaying conversation history
+- [x] Stop generation button
 - [x] Markdown rendering in chat
 - [x] Character prompts using: `personality`, `scenario`, `mes_example`
 - [x] Back-end connection status indicator
+- [x] Smart chat auto-scroll
 - [x] Automatic settings saving
 - [ ] Characters page enhancements:
   - [ ] Full character information view
-  - [ ] Character **archiving**
+  - [ ] Character archiving
 - [ ] Compact single executable
 - [ ] Hide server in system tray
 - [ ] Add code signing for release builds
 
 ## v0.4 — Polished Beta
 Quality of life improvements
-- [ ] Global UI refresh (Flowbite/Tailwind enhancements)
+- [ ] Message actions: edit • regenerate • copy • swipe navigation
 - [ ] Mobile-responsive layouts
 - [ ] Intuitive character card import interface
 - [ ] Enhanced character catalogue:
@@ -43,12 +44,10 @@ Quality of life improvements
 - [ ] Right-side "Chat info" drawer (large avatar, context statistics)
 - [ ] Localization support
 - [ ] Reasoning model support
-- [ ] Smart chat auto-scroll
 
 ## v0.5 — Feature-rich beta
 Competitive feature parity with other AI frontends
 - [ ] Multiple AI back-end support (ChatGPT, koboldcpp, etc.)
-- [ ] Message actions: edit • regenerate • copy • swipe navigation
 - [ ] Full-featured character editor
 - [ ] Lorebooks page with editor
 - [ ] Prompts using all character card fields
