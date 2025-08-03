@@ -19,8 +19,6 @@ namespace LiteRP.Core.Services;
 
 public class CharacterService : ICharacterService
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
-    
     private static readonly Regex DialogueTurnRegex = new(
         @"^\s*\{\{(char|user)\}\}\s*:\s*", 
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -63,6 +61,7 @@ public class CharacterService : ICharacterService
         var filePath = PathManager.GetCharacterFilePath(id);
         if (!File.Exists(filePath))
         {
+            _logger.LogError("Can't find character by its id");
             return null;
         }
         
@@ -73,7 +72,7 @@ public class CharacterService : ICharacterService
     public async Task SaveCharacterAsync(Character character)
     {
         var filePath = PathManager.GetCharacterFilePath(character.Id);
-        var json = JsonSerializer.Serialize(character, SerializerOptions);
+        var json = JsonSerializer.Serialize(character, JsonHelper.SerializerOptions);
         await File.WriteAllTextAsync(filePath, json);
     }
     

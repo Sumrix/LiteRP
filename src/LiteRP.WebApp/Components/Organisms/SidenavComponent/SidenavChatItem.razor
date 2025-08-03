@@ -1,28 +1,34 @@
-﻿@inherits FlowbiteComponentBase
-
+﻿@using LiteRP.WebApp.Utilities
 <li>
     <NavLink href="@ChatUrl"
              class="@NavLinkClasses"
-             ActiveClass="bg-gray-100 dark:bg-gray-700">
+             ActiveClass="bg-gray-100 dark:bg-gray-700"
+             style="margin: -0.727px">
 
-        <div class="flex-shrink-0 mr-3">
-@*             <Avatar ImageUrl="@Chat.AvatarUrl"
-                    Size="AvatarSize.Medium"
-                    Rounded="true" /> *@
+        <div class="flex-shrink-0 mr-3 w-10 h-10">
+            <CharacterAvatar Character="Chat.Character" SizeToken="sm" Class="rounded-full aspect-square" />
         </div>
 
         <div class="flex flex-col flex-grow w-0">
-            <span class="font-bold text-sm truncate dark:text-white">
-                @Chat.CharacterName
-            </span>
-            <span class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                @Chat.LastMessage
+            <div class="flex justify-between">
+                <span class="font-bold text-sm truncate dark:text-white">
+                    @Chat.Character.Name
+                </span>
+                @if (IsNew)
+                {
+                    <span class="w-7"></span>
+                }
+                else
+                {
+                    <span class="ml-auto text-xs text-gray-400 dark:text-gray-500 pl-1 flex-shrink-0">
+                        @Chat.Timestamp.ToShortAgo()
+                    </span>
+                }
+            </div>
+            <span class="truncate text-xs text-gray-500 dark:text-gray-400 truncate @(IsNew ? "italic" : "")">
+                @(IsNew ? "New Chat" : Chat.LastMessage)
             </span>
         </div>
-
-        <span class="ml-auto text-xs text-gray-400 dark:text-gray-500 pl-1 flex-shrink-0">
-            @Chat.Timestamp
-        </span>
     </NavLink>
 </li>
 
@@ -31,11 +37,18 @@
     /// The chat data object for this item.
     /// </summary>
     [Parameter, EditorRequired]
-    public ChatSummary Chat { get; set; } = default!;
+    public required ChatSummary Chat { get; set; }
 
-    private string ChatUrl => $"/chat/{Chat.Id}";
+    /// <summary>
+    /// If true, indicates this is a new, unsaved chat.
+    /// </summary>
+    [Parameter]
+    public bool IsNew { get; set; }
 
-    private string NavLinkClasses => CombineClasses(
-        "flex items-start p-2 w-full rounded-lg text-base font-medium text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group"
-    );
+    private string ChatUrl => IsNew ? $"/chat/new/{Chat.Character.Id}" : $"/chat/{Chat.Id}";
+
+    private string NavLinkClasses => new CssBuilder("flex items-start p-2 w-full rounded-lg text-base font-medium")
+        .AddClass("text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group")
+        .AddClass("border border-dashed border-gray-300 dark:border-gray-600", IsNew)
+        .Build();
 }

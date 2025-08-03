@@ -1,5 +1,5 @@
 ﻿@page "/chat/new/{CharacterIdForNewChat:guid}"
-@using LiteRP.Core.Enums
+@page "/chat/{ChatSessionId:guid}"
 @using LiteRP.Core.Services
 @inject IChatSessionService ChatSessionService
 @inject IToastService ToastService
@@ -47,7 +47,7 @@
             else
             {
                 <LrpButton Icon="IconTypes.PaperPlane" Class="absolute bottom-3.5 right-3" OnClick="SendMessage"
-                           Disabled="!_isAiConnected" />
+                           Disabled="!CanSendMessage" />
             }
         </div>
     </div>

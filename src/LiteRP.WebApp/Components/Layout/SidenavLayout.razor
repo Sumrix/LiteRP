@@ -1,6 +1,9 @@
 ﻿@using Flowbite.Components
 @using LiteRP.WebApp.Components.Organisms.SidenavComponent
 @inject IStringLocalizer<SharedResources> L
+@inject IChatSessionService ChatSessionService
+@inject ICharacterService CharacterService
+@inject ILogger<SidenavLayout> Logger
 
 <Sidenav @ref="_sidenav">
     <SidenavHeader>
@@ -18,28 +21,34 @@
             <SidenavItem Href="/alerts" Text="Alerts" /> *@
         </SidenavGroup>
 
-@*         <SidenavGroup Title="@L["Chats"]" IsTopBordered="true">
+        <SidenavGroup Title="@L["Chats"]" IsTopBordered="true">
             @if (_displayedChats is null)
             {
                 <p class="px-2 text-gray-400">@L["Loading chats..."]</p>
             }
             else
             {
+                if (_newChat != null)
+                {
+                    <SidenavChatItem Chat="_newChat" IsNew="true" />
+                }
+
                 @foreach (var chat in _displayedChats)
                 {
                     <SidenavChatItem Chat="@chat" />
                 }
-            
-                @if (_allChats is not null && _displayedChats.Count < _allChats.Count)
+
+                if (!_loadedLastChats)
                 {
                     <li class="px-2">
-                        <button @onclick="LoadMoreChats" class="w-full p-2 text-sm text-primary-600 dark:text-primary-500 hover:underline">
+                        <button @onclick="LoadMoreChats"
+                                class="w-full p-2 text-sm text-primary-600 dark:text-primary-500 hover:underline">
                             @L["Load More"]
                         </button>
                     </li>
                 }
             }
-        </SidenavGroup> *@
+        </SidenavGroup>
     </SidenavBody>
 
     <SidenavFooter>
@@ -51,50 +60,81 @@
 @code {
     public string Id => _sidenav.Id;
 
-    private List<ChatSummary>? _allChats;
     private List<ChatSummary>? _displayedChats;
+    private ChatSummary? _newChat;
     private const int PageSize = 10;
     private Sidenav _sidenav = null!;
+    private bool _loadedLastChats = false;
 
     protected override async Task OnInitializedAsync()
     {
-        // In a real app, you would fetch this data from an API
-        _allChats =
-        [
-            new() { Id = 1, CharacterName = "Elena Petrova", AvatarUrl = "https://i.pravatar.cc/150?img=5", LastMessage = "You: Okay, I will prepare the spaceship for...", Timestamp = "5m" },
-            new() { Id = 2, CharacterName = "Kael, the Shadowmancer", AvatarUrl = "https://i.pravatar.cc/150?img=3", LastMessage = "Kael smirks, his eyes glinting...", Timestamp = "2h" },
-            new() { Id = 3, CharacterName = "Dr. Aris Thorne", AvatarUrl = "https://i.pravatar.cc/150?img=51", LastMessage = "The anomaly's energy signature is unstable.", Timestamp = "21m" },
-            new() { Id = 4, CharacterName = "Lyra, the Stargazer", AvatarUrl = "https://i.pravatar.cc/150?img=47", LastMessage = "You: The constellation maps are ready.", Timestamp = "1h" },
-            new() { Id = 5, CharacterName = "Captain Eva Rostova", AvatarUrl = "https://i.pravatar.cc/150?img=31", LastMessage = "All hands to battle stations. I repeat...", Timestamp = "9h" },
-            new() { Id = 6, CharacterName = "Unit 734 (AI)", AvatarUrl = "https://i.pravatar.cc/150?img=12", LastMessage = "Query received. Processing optimal route...", Timestamp = "3d" },
-            new() { Id = 7, CharacterName = "Jax, the Scavenger", AvatarUrl = "https://i.pravatar.cc/150?img=60", LastMessage = "Found something shiny in the wreckage.", Timestamp = "1d" },
-            new() { Id = 8, CharacterName = "Seraphina, Priestess of Light", AvatarUrl = "https://i.pravatar.cc/150?img=25", LastMessage = "Her voice is a soft melody, calming the...", Timestamp = "5d" },
-            new() { Id = 9, CharacterName = "Marcus 'The Wall' Cole", AvatarUrl = "https://i.pravatar.cc/150?img=68", LastMessage = "You: Cover me, I'm going in.", Timestamp = "3h" },
-            new() { Id = 10, CharacterName = "Whisper", AvatarUrl = "https://i.pravatar.cc/150?img=20", LastMessage = "She nods silently, her message delivered.", Timestamp = "1w" },
-            new() { Id = 11, CharacterName = "Old Man Hemlock", AvatarUrl = "https://i.pravatar.cc/150?img=65", LastMessage = "The woods remember things, you see...", Timestamp = "15m" },
-            new() { Id = 12, CharacterName = "Cyber-Ninja Kenji", AvatarUrl = "https://i.pravatar.cc/150?img=15", LastMessage = "Target acquired. Engaging stealth protocol.", Timestamp = "4h" },
-            new() { Id = 13, CharacterName = "Anya Sharma", AvatarUrl = "https://i.pravatar.cc/150?img=43", LastMessage = "You: Did you manage to decrypt the file?", Timestamp = "32m" },
-            new() { Id = 14, CharacterName = "Grak, the Orc Chieftain", AvatarUrl = "https://i.pravatar.cc/150?img=33", LastMessage = "He lets out a guttural laugh, 'A worthy...'", Timestamp = "6d" },
-            new() { Id = 15, CharacterName = "The Oracle", AvatarUrl = "https://i.pravatar.cc/150?img=49", LastMessage = "The threads of fate are tangled, seeker.", Timestamp = "2d" },
-            new() { Id = 16, CharacterName = "Isabella 'Izzy' Rossi", AvatarUrl = "https://i.pravatar.cc/150?img=40", LastMessage = "My drone has eyes on the perimeter.", Timestamp = "8h" },
-            new() { Id = 17, CharacterName = "Lord Valerius", AvatarUrl = "https://i.pravatar.cc/150?img=57", LastMessage = "You: The documents are secured, my lord.", Timestamp = "1d" },
-            new() { Id = 18, CharacterName = "Fenrir, the Winter Wolf", AvatarUrl = "https://i.pravatar.cc/150?img=11", LastMessage = "A low growl echoes from the shadows.", Timestamp = "2h" },
-            new() { Id = 19, CharacterName = "Chloe 'Glitch' Martinez", AvatarUrl = "https://i.pravatar.cc/150?img=27", LastMessage = "I'm in the mainframe. Their firewalls are a joke.", Timestamp = "55m" },
-            new() { Id = 20, CharacterName = "The Void Entity", AvatarUrl = "https://i.pravatar.cc/150?img=13", LastMessage = "It speaks in whispers that are not sound...", Timestamp = "2w" }
-        ];
-        _displayedChats = _allChats.Take(PageSize).ToList();
-        await Task.CompletedTask; // To silence warning
+        // First subscribe, in case something will change during the first load
+        ChatSessionService.OnChange += () => HandleChatSessionsChange().CatchAndLog();
+        _displayedChats = await LoadChatSummaries(0);
     }
 
-    // private void LoadMoreChats()
-    // {
-    //     if (_allChats is null || _displayedChats is null) return;
+    private async Task<List<ChatSummary>> LoadChatSummaries(int skip)
+    {
+        var list = new List<ChatSummary>();
+        var sessionMetadataList = await ChatSessionService.GetSessionMetadataListAsync(skip, PageSize);
 
-    //     var currentCount = _displayedChats.Count;
-    //     var moreChats = _allChats.Skip(currentCount).Take(PageSize).ToList();
+        foreach (var metadata in sessionMetadataList)
+        {
+            list.Add(await ToChatSummary(metadata));
+        }
 
-    //     _displayedChats.AddRange(moreChats);
-    // }
+        if (list.Count < PageSize)
+        {
+            _loadedLastChats = true;
+        }
+
+        return list;
+    }
+
+    private async Task HandleChatSessionsChange()
+    {
+        try
+        {
+            _displayedChats = await LoadChatSummaries(0);
+
+            var newSession = ChatSessionService.NewSession;
+            if (newSession != null)
+            {
+                _newChat = await ToChatSummary(newSession);
+            }
+            else
+            {
+                _newChat = null;
+            }
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e, "Error during chat sessions loading");
+        }
+    }
+
+    private async Task LoadMoreChats()
+    {
+        if (_displayedChats is null) return;
+        var moreChats = await LoadChatSummaries(_displayedChats.Count);
+        _displayedChats.AddRange(moreChats);
+    }
 
     public async Task ToggleDrawerAsync() => await _sidenav.ToggleDrawerAsync();
+
+    private async Task<ChatSummary> ToChatSummary(ChatSessionMetadata metadata)
+    {
+        var character = await CharacterService.GetCharacterAsync(metadata.CharacterId)
+            ?? throw new InvalidOperationException($"The character {metadata.CharacterId} not found");
+
+        return new ChatSummary
+        {
+            Id = metadata.Id,
+            Character = character,
+            LastMessage = metadata.LastMessage,
+            Timestamp = DateTime.Now - metadata.LastModified
+        };
+    }
 }

@@ -11,8 +11,6 @@ namespace LiteRP.Core.Services;
 
 public class LorebookService : ILorebookService
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
-    
     public async Task<List<Lorebook>> GetLorebooksAsync()
     {
         var lorebookFiles = Directory.GetFiles(PathManager.LorebooksDataPath, "*.json");
@@ -21,7 +19,7 @@ public class LorebookService : ILorebookService
         foreach (var file in lorebookFiles)
         {
             var json = await File.ReadAllTextAsync(file);
-            var lorebook = JsonSerializer.Deserialize<Lorebook>(json, SerializerOptions);
+            var lorebook = JsonSerializer.Deserialize<Lorebook>(json, JsonHelper.SerializerOptions);
             if (lorebook != null)
             {
                 lorebooks.Add(lorebook);
@@ -40,13 +38,13 @@ public class LorebookService : ILorebookService
         }
 
         var json = await File.ReadAllTextAsync(filePath);
-        return JsonSerializer.Deserialize<Lorebook>(json, SerializerOptions);
+        return JsonSerializer.Deserialize<Lorebook>(json, JsonHelper.SerializerOptions);
     }
 
     public async Task SaveLorebookAsync(Lorebook lorebook)
     {
         var filePath = PathManager.GetLorebookFilePath(lorebook.Id);
-        var json = JsonSerializer.Serialize(lorebook, SerializerOptions);
+        var json = JsonSerializer.Serialize(lorebook, JsonHelper.SerializerOptions);
         await File.WriteAllTextAsync(filePath, json);
     }
 

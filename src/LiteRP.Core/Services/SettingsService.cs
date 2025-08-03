@@ -10,8 +10,6 @@ namespace LiteRP.Core.Services;
 
 public class SettingsService : ISettingsService
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
-    
     private AppSettings? _cachedSettings;
     
     public event Action? OnChange;
@@ -45,7 +43,7 @@ public class SettingsService : ISettingsService
 
     public async Task SaveSettingsAsync(AppSettings settings)
     {
-        var json = JsonSerializer.Serialize(settings, SerializerOptions);
+        var json = JsonSerializer.Serialize(settings, JsonHelper.SerializerOptions);
         await File.WriteAllTextAsync(PathManager.SettingsFilePath, json);
 
         _cachedSettings = settings;

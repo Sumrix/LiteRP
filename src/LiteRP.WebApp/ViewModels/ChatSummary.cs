@@ -1,10 +1,11 @@
-﻿namespace LiteRP.WebApp.ViewModels;
+﻿using LiteRP.Core.Models;
+
+namespace LiteRP.WebApp.ViewModels;
 
 public class ChatSummary
 {
-    public int Id { get; set; }
-    public required string CharacterName { get; set; }
-    public required string AvatarUrl { get; set; }
+    public required Guid Id { get; set; }
+    public required Character Character { get; set; }
     public required string LastMessage { get; set; }
-    public required string Timestamp { get; set; }
+    public required TimeSpan Timestamp { get; set; }
 }

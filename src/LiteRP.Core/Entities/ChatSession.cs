@@ -18,15 +18,25 @@ namespace LiteRP.Core.Entities;
 
 public class ChatSession
 {
-    private readonly Character _character;
     private readonly ISettingsService _settingsService;
     private readonly ChatHistory _history;
+    private DateTime _lastChatTime;
+
+    public Guid Id { get; }
+    public Character Character { get; }
     
-    private ChatSession(Character character, ISettingsService settingsService, ChatHistory chatHistory)
+    private ChatSession(
+        Guid id,
+        Character character,
+        ISettingsService settingsService,
+        ChatHistory chatHistory,
+        DateTime lastChatTime)
     {
-        _character = character;
+        Character = character;
         _settingsService = settingsService;
         _history = chatHistory;
+        _lastChatTime = lastChatTime;
+        Id = id;
     }
 
     public static async Task<ChatSession> CreateAsync(
@@ -34,8 +44,10 @@ public class ChatSession
         ISettingsService settingsService,
         ChatSessionState? state = null)
     {
+        var sessionId = state?.Id ?? Guid.NewGuid();
+        var lastChatTime = state?.LastModified ?? DateTime.Now;
         var history = await CreateInitialHistoryAsync(character, settingsService, state);
-        return new ChatSession(character, settingsService, history);
+        return new ChatSession(sessionId, character, settingsService, history, lastChatTime);
     }
 
     private static async Task<ChatHistory> CreateInitialHistoryAsync(
@@ -106,7 +118,10 @@ public class ChatSession
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (!string.IsNullOrWhiteSpace(userInput))
+        {
             _history.AddUserMessage(userInput);
+            _lastChatTime = DateTime.Now;
+        }
 
         // We need to get new settings each time, because they might change during ChatSession lifetime.
         var settings = await _settingsService.GetSettingsAsync();
@@ -172,16 +187,30 @@ public class ChatSession
         }
 
         _history.AddAssistantMessage(response.ToString());
+        _lastChatTime = DateTime.Now;
     }
 
-    public ChatSessionState ToState()
+    public ChatSessionState GetState()
     {
         return new ChatSessionState
         {
-            CharacterId = _character.Id,
+            Id = Id,
+            CharacterId = Character.Id,
             Messages = _history
-                .Select(message => new ChatMessage(message.Role.ToChatRole(), message.Content))
-                .ToList()
+                .Select(message => new ChatMessage(message.Role.ToChatRole(), message.Content!))
+                .ToList(),
+            LastModified = _lastChatTime
+        };
+    }
+
+    public ChatSessionMetadata GetMetadata()
+    {
+        return new ChatSessionMetadata()
+        {
+            Id = Id,
+            CharacterId = Character.Id,
+            LastMessage = _history.Last().Content!,
+            LastModified = _lastChatTime
         };
     }
 }

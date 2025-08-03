@@ -9,18 +9,24 @@ using Microsoft.JSInterop;
 
 namespace LiteRP.WebApp.Components.Pages;
 
-public partial class Chat : IDisposable
+public partial class Chat : IAsyncDisposable
 {
     [Inject]
     private IJSRuntime JS { get; set; } = null!;
 
-    [Parameter, EditorRequired]
-    public Guid CharacterIdForNewChat { get; set; }
+    [Parameter] public Guid? CharacterIdForNewChat { get; set; }
+    [Parameter] public Guid? ChatSessionId { get; set; }
 
     private List<ChatMessageViewModel> _chatMessageViewModels = [];
     private Character _character = null!;
     private ChatSession _chatSession = null!;
     private AppSettings _appSettings = null!;
+
+    private bool CanSendMessage => 
+        (!string.IsNullOrWhiteSpace(_userInput) ||
+         _chatMessageViewModels.LastOrDefault()?.Sender.SenderType != SenderType.Ai) &&
+        !_isAiResponding &&
+        _isAiConnected;
     
     private const string InputId = "chat-input";
     private string _userInput = string.Empty;
@@ -38,20 +44,38 @@ public partial class Chat : IDisposable
 
     protected override async Task OnParametersSetAsync()
     {
-        var character = await CharacterService.GetCharacterAsync(CharacterIdForNewChat);
-        if (character == null)
+        //if (_chatMessageViewModels.Count == 1)
+        //    await ChatSessionService.DeleteSessionAsync(_chatSession.Id);
+
+        if (ChatSessionId.HasValue)
         {
-            Nav.NavigateTo("/not-found", replace: true);
+            var chatSession = await ChatSessionService.LoadSessionAsync(ChatSessionId.Value);
+            if (chatSession == null)
+            {
+                Nav.NavigateTo("/not-found", replace: true);
+                return;
+            }
+
+            _chatSession = chatSession;
+            _character = _chatSession.Character;
         }
-        else
+        else if (CharacterIdForNewChat.HasValue)
         {
+            var character = await CharacterService.GetCharacterAsync(CharacterIdForNewChat.Value);
+            if (character == null)
+            {
+                Nav.NavigateTo("/not-found", replace: true);
+                return;
+            }
+
             _character = character;
             _chatSession = await ChatSessionService.CreateNewSessionAsync(character);
-            _chatMessageViewModels = _chatSession.ToState().Messages
-                .Where(message => message.Role is ChatRole.Assistant or ChatRole.User)
-                .Select(message => ChatMessageViewModel.FromChatMessage(message, _appSettings.UserName, character))
-                .ToList();
         }
+        
+        _chatMessageViewModels = _chatSession.GetState().Messages
+            .Where(message => message.Role is ChatRole.Assistant or ChatRole.User)
+            .Select(message => ChatMessageViewModel.FromChatMessage(message, _appSettings.UserName, _character))
+            .ToList();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -96,11 +120,7 @@ public partial class Chat : IDisposable
 
     private async Task SendMessage()
     {
-        if (string.IsNullOrWhiteSpace(_userInput) &&
-            _chatMessageViewModels.Last().Sender.SenderType == SenderType.Ai ||
-            _isAiResponding ||
-            !_isAiConnected)
-            return;
+        if (!CanSendMessage) return;
 
         _messageGenerationCts = new();
         var userMessage = _userInput;
@@ -122,14 +142,6 @@ public partial class Chat : IDisposable
             await OllamaStatusService.TriggerCheckAsync();
             ToastService.ShowError(errorMessage, 10000);
         }
-        catch (HttpIOException ex) when(ex.HttpRequestError == HttpRequestError.ResponseEnded)
-        {
-            _chatMessageViewModels.Remove(aiResponseViewModel);
-            const string errorMessage = "An unexpected error occurred. Please try again later.";
-            Logger.LogError(ex, "UnexpectedException: {ErrorMessage}", errorMessage);
-            await OllamaStatusService.TriggerCheckAsync();
-            ToastService.ShowError(errorMessage, 10000);
-        }
         catch (OperationCanceledException)
         {
             Logger.LogInformation("Chat generation was canceled.");
@@ -147,6 +159,15 @@ public partial class Chat : IDisposable
             if (!wasMessagePopulated)
             {
                 _chatMessageViewModels.Remove(aiResponseViewModel);
+            }
+            else
+            {
+                await ChatSessionService.SaveSessionAsync(_chatSession);
+        
+                if (ChatSessionId == null)
+                {
+                    Nav.NavigateTo($"/chat/{_chatSession.Id}", replace: true);
+                }
             }
             
             aiResponseViewModel.Mode = MessageDisplayMode.Ready;
@@ -230,12 +251,14 @@ public partial class Chat : IDisposable
         }
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        _messageGenerationCts.Cancel();
+        await _messageGenerationCts.CancelAsync();
         _messageGenerationCts.Dispose();
         OllamaStatusService.StopMonitoring(this);
         OllamaStatusService.StatusChanged -= HandleOllamaStatusChanged;
+        //if (_chatMessageViewModels.Count == 1)
+        //    await ChatSessionService.DeleteSessionAsync(_chatSession.Id);
         GC.SuppressFinalize(this);
     }
 }

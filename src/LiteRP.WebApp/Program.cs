@@ -49,7 +49,9 @@ try
     builder.Services.AddSingleton<ICharacterService, CharacterService>();
     builder.Services.AddSingleton<ILorebookService, LorebookService>();
     builder.Services.AddSingleton<IAvatarService, AvatarService>();
-    builder.Services.AddSingleton<IChatSessionService, ChatSessionService>();
+    builder.Services.AddSingleton<IChatSessionStateService, ChatSessionStateService>();
+    // ChatSessionService is scoped, because each scope must have different ChatSessionService.NewSession instance
+    builder.Services.AddScoped<IChatSessionService, ChatSessionService>();
     builder.Services.AddSingleton<OllamaStatusService>();
     builder.Services.AddScoped<IElementClickObserverService, ElementClickObserverService>();
 
