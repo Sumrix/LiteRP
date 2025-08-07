@@ -25,9 +25,7 @@ Feature-complete for public testing
 - [x] Back-end connection status indicator
 - [x] Smart chat auto-scroll
 - [x] Automatic settings saving
-- [ ] Characters page enhancements:
-  - [ ] Full character information view
-  - [ ] Character archiving
+- [x] Character information view
 - [ ] Compact single executable
 - [ ] Hide server in system tray
 - [ ] Add code signing for release builds
@@ -48,7 +46,8 @@ Quality of life improvements
 ## v0.5 — Feature-rich beta
 Competitive feature parity with other AI frontends
 - [ ] Multiple AI back-end support (ChatGPT, koboldcpp, etc.)
-- [ ] Full-featured character editor
+- [ ] Full-featured character editor 
+- [ ] Character archiving
 - [ ] Lorebooks page with editor
 - [ ] Prompts using all character card fields
 - [ ] Smart context management
