@@ -8,6 +8,7 @@
 @inject IOptions<AvatarOptions> AvatarSettings
 @inject IAvatarService AvatarService
 @inject ILorebookService LorebookService
+@inject NavigationManager Nav
 
 <PageTitle>LiteRP - @L["Characters"]</PageTitle>
 
@@ -25,10 +26,6 @@
                    OnChange="UploadCharacter"
                    multiple
                    accept=".bmp,.gif,.jpeg,.jpg,.pbm,.png,.tiff,.tif,.tga,.webP,.qoi" />
-
-@*         <Tooltip Content="This is a basic tooltip">
-            <Icon1 Type="new InfoCircleIcon()" />
-        </Tooltip> *@
     </div>
 </header>
 
@@ -82,7 +79,10 @@
         <div class="relative z-10 grid gap-2 grid-cols-[repeat(auto-fill,minmax(12rem,1fr))]">
             @foreach (var character in _characters)
             {
-                <CharacterCard Character="character" OnDelete="ShowDialog" />
+                <CharacterCard Character="character"
+                               OnChat="OpenChat"
+                               OnDelete="ShowDeleteCharacterModal"
+                               OnView="ShowCharacterViewModal" />
             }
         </div>
 
@@ -98,135 +98,8 @@
     }
 </div>
 
-<Modal Show="showDefaultModal">
-    <ModalHeader><h3>Are you sure?</h3></ModalHeader>
-    <ModalBody>
-        <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
-            You are about to delete <b>@_deletingCharacter!.Name</b>, this cannot be undone.
-        </p>
-    </ModalBody>
-    <ModalFooter>
-        <div class="flex justify-end w-full">
-            <LrpButton OnClick="@(() => HideDialog())" Variant="LrpButtonStyle.Subtle" Color="LrpButtonColor.Grey" class="mr-2">No, cancel</LrpButton>
-            <LrpButton OnClick="@(() => DeleteCharacter())" Color="LrpButtonColor.Red">Yes, I'm sure</LrpButton>
-        </div>
-    </ModalFooter>
-</Modal>
-
-
-@code {
-    private List<Character>? _characters = null;
-    // private string _sort = "Name (A-Z)";
-    private bool _isDragOver;
-    private int _dragCounter = 0;
-    private Character? _deletingCharacter = null;
-    private bool showDefaultModal = false;
-
-    private void HandleDragEnter()
-    {
-        _dragCounter++;
-        if (_dragCounter > 0)
-        {
-            _isDragOver = true;
-            StateHasChanged();
-        }
-    }
-
-    private void HandleDragLeave()
-    {
-        _dragCounter--;
-        if (_dragCounter <= 0)
-        {
-            _dragCounter = 0;
-            _isDragOver = false;
-            StateHasChanged();
-        }
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        _characters = await CharacterService.GetCharactersAsync();
-    }
-
-    private async Task OpenPicker()
-    {
-        await JS.InvokeVoidAsync("LiteRP.openFileDialog", "filePicker");
-    }
-
-    private async Task UploadCharacter(InputFileChangeEventArgs e)
-    {
-        _dragCounter = 0;
-        _isDragOver = false;
-        
-        try
-        {
-            foreach (var file in e.GetMultipleFiles(int.MaxValue))
-            {
-                if (file.Size > AvatarSettings.Value.MaxAllowedUploadBytes)
-                {
-                    ToastService.ShowError($"File is too large (max {AvatarSettings.Value.MaxAllowedUploadMegabytes} MB)");
-                    continue;
-                }
-
-                await using var imageStream = file.OpenReadStream(maxAllowedSize: AvatarSettings.Value.MaxAllowedUploadBytes);
-
-                using var memoryStream = new MemoryStream();
-                await imageStream.CopyToAsync(memoryStream);
-
-                // Attempt to parse character data from the image
-                memoryStream.Position = 0;
-                var (parsedCharacter, parsedLorebook) = await CharacterService.ParseTavernAiCardAsync(memoryStream);
-
-                if (parsedCharacter == null)
-                {
-                    ToastService.ShowError($"Couldn't upload {file.Name}, because it not TavernAI V2 character card.");
-                    continue;
-                }
-
-                parsedCharacter.HasAvatar = true;
-                if (parsedLorebook != null)
-                {
-                    parsedCharacter.LorebookId = parsedLorebook.Id;
-                }
-
-                await CharacterService.SaveCharacterAsync(parsedCharacter);
-
-                memoryStream.Position = 0;
-                await AvatarService.SavePermanentAvatarAsync(parsedCharacter.Id, memoryStream);
-
-                _characters!.Add(parsedCharacter);
-
-                if (parsedLorebook != null)
-                {
-                    await LorebookService.SaveLorebookAsync(parsedLorebook);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            ToastService.ShowError($"Error processing file: {ex.Message}");
-        }
-        finally
-        {
-            StateHasChanged();
-        }
-    }
-
-    public void ShowDialog(Character character)
-    {
-        _deletingCharacter = character;
-        showDefaultModal = true;
-    }
-
-    public void HideDialog()
-    {
-        showDefaultModal = false;
-    }
-
-    public async Task DeleteCharacter()
-    {
-        HideDialog();
-        await CharacterService.DeleteCharacterAsync(_deletingCharacter!.Id);
-        _characters!.Remove(_deletingCharacter);
-    }
-}
+<DeleteCharacterModal @ref="_deleteModal"
+                      OnDelete="@(ch => DeleteCharacter(ch))" />
+<CharacterViewModal @ref="_characterModal"
+                    OnChat="OpenChat"
+                    OnDelete="DeleteCharacter"/>

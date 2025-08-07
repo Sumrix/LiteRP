@@ -222,7 +222,7 @@ public partial class LrpButton
         _ => throw new InvalidEnumArgumentException(nameof(Color), (int)Color, typeof(LrpButtonColor))
     };
 
-    private string GetOverlayColorClasses() => new CssBuilder("drop-shadow-[0_1.5px_1.5px_rgba(0,0,0,0.6)]")
+    private string GetOverlayColorClasses() => new CssBuilder("drop-shadow-[0_0px_1.5px_rgba(0,0,0,0.6)]")
         .AddClass(Color switch
         {
             LrpButtonColor.Grey => "text-white hover:bg-black/30 dark:hover:bg-black/50 active:bg-black/40 dark:active:bg-black/60",

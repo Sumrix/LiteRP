@@ -1,0 +1,157 @@
+﻿@using Flowbite.Components
+@using Markdig
+
+<Modal @bind-Show="Show" DataTestId="hello" Size="ModalSize.FourExtraLarge" Position="ModalPosition.TopCenter">
+    <ModalHeader>@_character.Name</ModalHeader>
+    <ModalBody>
+        <div class="grid gap-6 grid-cols-1 md:flex md:gap-6">
+            <div class="md:col-span-1 flex flex-col items-center md:items-start">
+                <CharacterAvatar Character="_character" 
+                                 SizeToken="lg"
+                                 Class="max-w-[256px] rounded-lg shadow-md" />
+            </div>
+            <div class="flex-1 max-h-[60vh] md:max-h-[55vh] overflow-y-auto space-y-4">
+
+                @if (_character.Tags.Count > 0)
+                {
+                    <div class="flex flex-wrap gap-2">
+                        @foreach (var tag in _character.Tags)
+                        {
+                            <Badge>@tag</Badge>
+                        }
+                    </div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(_formattedCreatorNotes))
+                {
+                    <dl>
+                        <dt class="mb-2 font-semibold leading-none text-gray-900 dark:text-white">
+                            Creator Notes
+                        </dt>
+                        <dd class="chat-style-1 leading-relaxed space-y-2 mb-4 sm:mb-5">
+                            @((MarkupString)_formattedCreatorNotes)
+                        </dd>
+                    </dl>
+                }
+                @if (!string.IsNullOrWhiteSpace(_formattedPersonality))
+                {
+                    <dl>
+                        <dt class="mb-2 font-semibold leading-none text-gray-900 dark:text-white">
+                            Personality
+                        </dt>
+                        <dd class="chat-style-1 leading-relaxed space-y-2 mb-4 sm:mb-5">
+                            @((MarkupString)_formattedPersonality)
+                        </dd>
+                    </dl>
+                }
+                @if (!string.IsNullOrWhiteSpace(_formattedScenario))
+                {
+                    <dl>
+                        <dt class="mb-2 font-semibold leading-none text-gray-900 dark:text-white">
+                            Scenario
+                        </dt>
+                        <dd class="chat-style-1 leading-relaxed space-y-2 mb-4 sm:mb-5">
+                            @((MarkupString)_formattedScenario)
+                        </dd>
+                    </dl>
+                }
+                @if (!string.IsNullOrWhiteSpace(_formattedDescription))
+                {
+                    <dl>
+                        <dt class="mb-2 font-semibold leading-none text-gray-900 dark:text-white">
+                            Description
+                        </dt>
+                        <dd class="chat-style-1 leading-relaxed space-y-2 mb-4 sm:mb-5">
+                            @((MarkupString)_formattedDescription)
+                        </dd>
+                    </dl>
+                }
+                @if (!string.IsNullOrWhiteSpace(_character.Creator))
+                {
+                    <dl>
+                        <dt class="mb-2 font-semibold leading-none text-gray-900 dark:text-white">
+                            Creator
+                        </dt>
+                        <dd class="chat-style-1 leading-relaxed space-y-2 mb-4 sm:mb-5">
+                            @_character.Creator
+                        </dd>
+                    </dl>
+                }
+
+            </div>
+        </div>
+    </ModalBody>
+    <ModalFooter>
+        <LrpButton Icon="IconTypes.MessageDotsSolid"
+                   OnClick="OpenChat" >
+            Chat with @_character.Name
+        </LrpButton>
+        <LrpButton Icon="IconTypes.TrashBin"
+                   Variant="LrpButtonStyle.Outline"
+                   Color="LrpButtonColor.Red"
+                   OnClick="DeleteCharacter">
+            Delete
+        </LrpButton>
+    </ModalFooter>
+</Modal>
+
+@code
+{
+    [Parameter] public EventCallback<Character> OnChat { get; set; }
+    [Parameter] public EventCallback<Character> OnDelete { get; set; }
+
+    private Character _character = null!;
+    private bool Show { get; set; }
+    private string? _formattedCreatorNotes;
+    private string? _formattedDescription;
+    private string? _formattedPersonality;
+    private string? _formattedScenario;
+    private MarkdownPipeline? _pipeline;
+
+    protected override Task OnInitializedAsync()
+    {
+        _pipeline = new MarkdownPipelineBuilder()
+            .UseAdvancedExtensions()
+            .UseSoftlineBreakAsHardlineBreak()
+            .Build();
+        return base.OnInitializedAsync();
+    }
+
+    public void ShowDialog(Character character)
+    {
+        _character = character;
+
+        _formattedCreatorNotes = !string.IsNullOrWhiteSpace(character.CreatorNotes)
+            ? Markdown.ToHtml(_character.CreatorNotes, _pipeline)
+            : null;
+        _formattedDescription = !string.IsNullOrWhiteSpace(character.Description)
+            ? Markdown.ToHtml(_character.Description, _pipeline)
+            : null;
+        _formattedPersonality = !string.IsNullOrWhiteSpace(character.Personality)
+            ? Markdown.ToHtml(_character.Personality!, _pipeline)
+            : null;
+        _formattedScenario = !string.IsNullOrWhiteSpace(character.Scenario)
+            ? Markdown.ToHtml(_character.Scenario, _pipeline)
+            : null;
+
+        Show = true;
+        StateHasChanged();
+    }
+
+    public void HideDialog()
+    {
+        Show = false;
+    }
+
+    private async Task OpenChat()
+    {
+        Show = false;
+        await OnChat.InvokeAsync(_character);
+    }
+
+    private async Task DeleteCharacter()
+    {
+        Show = false;
+        await OnDelete.InvokeAsync(_character);
+    }
+}

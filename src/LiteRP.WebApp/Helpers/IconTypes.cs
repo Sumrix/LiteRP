@@ -25,4 +25,6 @@ public class IconTypes
     public static readonly Type EyeSolid = typeof(EyeSolidIcon);
     public static readonly Type InfoCircleSolid = typeof(InfoCircleSolidIcon);
     public static readonly Type StopSolid = typeof(StopSolidIcon);
+    public static readonly Type MessageDotsSolid = typeof(MessageDotsSolidIcon);
+    public static readonly Type ProfileCardSolid = typeof(ProfileCardSolidIcon);
 }

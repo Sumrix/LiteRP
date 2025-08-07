@@ -8,12 +8,14 @@
          src="@_src"
          srcset="@_srcSet"
          loading="lazy"
+         alt="@Character.Name's avatar"
          @attributes="AdditionalAttributes" />
 }
 else
 {
     <img class="@ImageClasses"
          src="@UrlManager.AvatarPlaceholderUrl"
+         alt="Avatar placeholder"
          loading="lazy" 
          @attributes="AdditionalAttributes"/>
 }
@@ -39,7 +41,7 @@ else
     private string _src = string.Empty;
     private string _srcSet = string.Empty;
 
-    private string ImageClasses => new CssBuilder("w-full h-full object-cover")
+    private string ImageClasses => new CssBuilder("object-cover") // w-full h-full
         .AddClass(Class)
         .Build();
 

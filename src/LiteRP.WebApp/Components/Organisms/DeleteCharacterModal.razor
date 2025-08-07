@@ -1,0 +1,48 @@
+﻿@using Flowbite.Components
+
+<Modal @bind-Show="Show">
+    <ModalHeader><h3>Are you sure?</h3></ModalHeader>
+    <ModalBody>
+        <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+            You are about to delete <b>@_character.Name</b>, this cannot be undone.
+        </p>
+    </ModalBody>
+    <ModalFooter>
+        <div class="flex justify-end w-full">
+            <LrpButton OnClick="@(() => Cancel())" Variant="LrpButtonStyle.Subtle" Color="LrpButtonColor.Grey" class="mr-2">No, cancel</LrpButton>
+            <LrpButton OnClick="@(() => DeleteCharacter())" Color="LrpButtonColor.Red">Yes, I'm sure</LrpButton>
+        </div>
+    </ModalFooter>
+</Modal>
+
+@code
+{
+    [Parameter] public EventCallback<Character> OnDelete { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private Character _character = null!;
+    private bool Show { get; set; }
+
+    public void ShowDialog(Character character)
+    {
+        _character = character;
+        Show = true;
+    }
+
+    public void HideDialog()
+    {
+        Show = false;
+    }
+
+    private async Task Cancel()
+    {
+        Show = false;
+        await OnCancel.InvokeAsync();
+    }
+    
+    private async Task DeleteCharacter()
+    {
+        Show = false;
+        await OnDelete.InvokeAsync(_character);
+    }
+}

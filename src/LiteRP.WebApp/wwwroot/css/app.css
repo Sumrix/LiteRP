@@ -55,12 +55,16 @@ html, body {
 }
 
 @layer components {
+    .chat-style-1 {
+        @apply text-gray-500 dark:text-gray-400;
+    }
+
     .chat-style-1 em {
-        @apply italic text-gray-500 dark:text-gray-400;
+        @apply italic;
     }
 
     .chat-style-1 strong {
-        @apply font-bold;
+        @apply font-semibold text-gray-900 dark:text-white;
     }
 
     .chat-style-2 em {
