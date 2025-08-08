@@ -10,22 +10,28 @@ public class StartupHostedService : IHostedService
 {
     private readonly IHostApplicationLifetime _life;
     private readonly IServiceProvider _services;
+    private readonly IHostEnvironment _hostEnvironment;
     private readonly IServerAddressesFeature? _addresses;
 
     public StartupHostedService(
         IHostApplicationLifetime life,
         IServer server,
-        IServiceProvider services)
+        IServiceProvider services,
+        IHostEnvironment hostEnvironment)
     {
         _life  = life;
         _services = services;
+        _hostEnvironment = hostEnvironment;
         _addresses = server.Features.Get<IServerAddressesFeature>();
     }
 
     public Task StartAsync(CancellationToken _)
     {
-        _life.ApplicationStarted.Register(() =>
-            LaunchBrowser(_addresses?.Addresses.First() ?? "http://localhost:5000"));
+        if (_hostEnvironment.IsProduction())
+        {
+            _life.ApplicationStarted.Register(() =>
+                LaunchBrowser(_addresses?.Addresses.First() ?? "http://localhost:5000"));
+        }
 
         _services.GetService<OllamaStatusService>();
 

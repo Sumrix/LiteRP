@@ -62,11 +62,8 @@ try
     });
 
     builder.Services.AddLocalization();
-
-    if (builder.Environment.IsProduction())
-    {
-        builder.Services.AddHostedService<StartupHostedService>();
-    }
+    
+    builder.Services.AddHostedService<StartupHostedService>();
 
     var app = builder.Build();
 
