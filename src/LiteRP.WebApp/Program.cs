@@ -1,4 +1,9 @@
-﻿using System.Reflection;
+﻿#if WINDOWS
+using System.Drawing;
+using H.NotifyIcon.Core;
+#endif
+
+using System.Reflection;
 using LiteRP.Core.Helpers;
 using LiteRP.Core.Models;
 using LiteRP.Core.Services;
@@ -44,7 +49,7 @@ try
         .CreateLogger();
 
     Log.Information("------------Starting LiteRP------------");
-    
+
     builder.Services.AddSerilog(Log.Logger);
     builder.Services.AddRazorComponents()
         .AddInteractiveServerComponents()
@@ -114,11 +119,65 @@ try
 
     app.MapRazorComponents<App>()
         .AddInteractiveServerRenderMode();
-    
-    Log.Information("Initialization complete");
 
-    await app.RunAsync();
+    Log.Information("Initialization complete");
     
+#if WINDOWS
+    // On Windows, run with the tray icon
+    var lifetime = new ManualResetEvent(false);
+
+    await using var stream = provider.GetFileInfo("favicon.ico").CreateReadStream();
+    using var icon = new Icon(stream);
+    using var trayIcon = new TrayIconWithContextMenu
+    {
+        Icon = icon.Handle,
+        ToolTip = "LiteRP"
+    };
+
+    trayIcon.ContextMenu = new PopupMenu
+    {
+        Items =
+        {
+            new PopupMenuItem("Show", (_, _) => 
+            {
+                // Logic to show the main window if you implement one.
+                // For a web app, you might open the browser.
+                var url = app.Urls.FirstOrDefault() ?? "http://localhost:5000";
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true });
+            }),
+            new PopupMenuSeparator(),
+            new PopupMenuItem("Exit", (_, _) =>
+            {
+                Environment.Exit(0);
+            }),
+        },
+    };
+
+    trayIcon.Created += (s, e) => 
+    {
+        if (s is TrayIconWithContextMenu { IsDisposed: false } senderTrayIcon)
+        {
+            senderTrayIcon.ShowNotification(
+                "LiteRP Started",
+                "The application is running in the system tray.",
+                NotificationIcon.Info,
+                sound: false,
+                realtime: true);
+        }
+    };
+    
+    trayIcon.Create();
+
+    // Run the Blazor app in the background
+    var appTask = app.RunAsync();
+
+    Console.WriteLine("Windows tray application running in the background.");
+    lifetime.WaitOne();
+#else
+    // On Linux and macOS, run as a normal console app
+    await app.RunAsync();
+#endif
+
     Log.Information("Stopped cleanly");
 }
 catch (Exception e)

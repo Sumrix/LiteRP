@@ -27,7 +27,7 @@ Feature-complete for public testing
 - [x] Automatic settings saving
 - [x] Character information view
 - [x] Compact single executable
-- [ ] Hide server in system tray
+- [x] Hide server in system tray
 
 ## v0.4 — Polished Beta
 Quality of life improvements

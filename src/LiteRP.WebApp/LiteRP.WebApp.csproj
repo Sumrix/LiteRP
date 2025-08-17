@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFrameworks>net9.0;net9.0-windows</TargetFrameworks>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
@@ -17,6 +17,10 @@
     <TailwindInputFile>..\wwwroot\css\app.css</TailwindInputFile>
     <TailwindOutputFile>..\wwwroot\css\app.min.css</TailwindOutputFile>
     <TailwindInstallPath>$(BaseIntermediateOutputPath)\tailwind-cli\</TailwindInstallPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0-windows'">
+    <OutputType>WinExe</OutputType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
@@ -59,6 +63,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>-->
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0-windows'">
+    <PackageReference Include="H.NotifyIcon" Version="2.3.0" />
   </ItemGroup>
 
   <ItemGroup>
