@@ -46,22 +46,14 @@ try
     Log.Information("------------Starting LiteRP------------");
     
     builder.Services.AddSerilog(Log.Logger);
-
     builder.Services.AddRazorComponents()
-        .AddInteractiveServerComponents();
-
-
-    builder.Services.AddControllers(); 
-
+        .AddInteractiveServerComponents()
+        .AddCircuitOptions(options => options.DetailedErrors = true);
     builder.Services.AddFlowbite();
-
     builder.Services.Configure<AvatarOptions>(builder.Configuration.GetSection("Avatar"));
     builder.Services.Configure<OllamaOptions>(builder.Configuration.GetSection("Ollama"));
-
     builder.Services.AddKernel();
-
     builder.Services.AddHttpClient();
-
     builder.Services.AddSingleton<ISettingsService, SettingsService>();
     builder.Services.AddSingleton<ICharacterService, CharacterService>();
     builder.Services.AddSingleton<ILorebookService, LorebookService>();
@@ -71,7 +63,6 @@ try
     builder.Services.AddScoped<IChatSessionService, ChatSessionService>();
     builder.Services.AddSingleton<OllamaStatusService>();
     builder.Services.AddScoped<IElementClickObserverService, ElementClickObserverService>();
-
     builder.Services.AddOutputCache(options =>
     {
         options.AddPolicy("AvatarPolicy", policy =>
@@ -81,11 +72,13 @@ try
 
     var app = builder.Build();
 
-    // Configure the HTTP request pipeline.
     if (!app.Environment.IsDevelopment())
     {
         app.UseExceptionHandler("/Error", createScopeForErrors: true);
     }
+    app.UseStatusCodePagesWithReExecute("/not-found");
+    app.UseOutputCache();
+    app.UseAntiforgery();
 
     var provider = new ManifestEmbeddedFileProvider(assembly, "wwwroot");
     app.UseStaticFiles(new StaticFileOptions
@@ -93,13 +86,32 @@ try
         FileProvider = provider
     });
 
-    app.UseStatusCodePagesWithReExecute("/not-found");
+    var avatars = app.MapGroup("/characters/{characterId:guid}/avatar")
+        .WithGroupName("avatars");
 
-    app.UseOutputCache();
+    // GET /characters/{id}/avatar/{sizeToken}?v=...&dpr=...
+    avatars.MapGet("/{sizeToken}", async (
+            Guid characterId,
+            string sizeToken,
+            int? v,
+            int dpr,
+            IAvatarService avatarService,
+            HttpResponse http) =>
+        {
+            if (dpr <= 0) dpr = 1;
 
-    app.UseAntiforgery();
+            var stream = await avatarService.GetResizedAvatarStreamAsync(characterId, sizeToken, dpr);
+            if (stream is null)
+                return Results.NotFound();
 
-    app.MapControllers();
+            const long oneYear = 31536000;
+            http.Headers.CacheControl = $"public,max-age={oneYear},immutable";
+            http.Headers[HeaderNames.ContentType] = "image/webp";
+
+            return Results.Stream(stream, "image/webp");
+        })
+        .CacheOutput("AvatarPolicy");
+
     app.MapRazorComponents<App>()
         .AddInteractiveServerRenderMode();
     

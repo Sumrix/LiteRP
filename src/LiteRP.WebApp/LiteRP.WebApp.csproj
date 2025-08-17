@@ -23,6 +23,27 @@
     <PublishSingleFile>true</PublishSingleFile>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <PublishReadyToRun>false</PublishReadyToRun>
+
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>full</TrimMode>
+
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+
+    <EventSourceSupport>false</EventSourceSupport>
+    <MetricsSupport>false</MetricsSupport>
+    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+    <StartupHookSupport>false</StartupHookSupport>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
+
+    <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+    <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
+    <EnableCppCLIHostActivation>false</EnableCppCLIHostActivation>
+    <EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>false</EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>
+
+    <PublishIISAssets>false</PublishIISAssets>
+    <EnableIISIntegration>false</EnableIISIntegration>
   </PropertyGroup>
 
   <ItemGroup>
@@ -53,6 +74,12 @@
     <Content Update="appsettings*.json" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
     <None Remove="appsettings*.json" />
     <EmbeddedResource Include="appsettings.json" LogicalName="LiteRP.WebApp.appsettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="ILLink.Descriptors.xml" />
+    <EmbeddedResource Include="ILLink.Descriptors.xml" />
+    <TrimmerRootDescriptor Include="ILLink.Descriptors.xml" />
   </ItemGroup>
 
 </Project>

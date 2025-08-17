@@ -1,5 +1,4 @@
 ﻿using LiteRP.WebApp.Components.Atoms.Tooltip;
-
 using Microsoft.AspNetCore.Components;
 
 namespace LiteRP.WebApp.Components.Molecules;
@@ -13,8 +12,7 @@ public partial class LrpHelpIcon
     public required string Content { get; set; }
 
     // Change the default value assignment for Icon to use Icons.QuestionCircleSolid instead of LiteRP.WebApp.Helpers.Icons.QuestionCircleSolid
-    [Parameter]
-    public Type Icon { get; set; } = Helpers.IconTypes.QuestionCircleSolid;
+    [Parameter] public Type Icon { get; set; } = Helpers.IconTypes.QuestionCircleSolid;
 
     /// <summary>
     /// Позиция всплывающей подсказки (например, Top, Bottom, Left, Right).

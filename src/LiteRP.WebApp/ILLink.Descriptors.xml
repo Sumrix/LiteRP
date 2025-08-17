@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<linker>
+  <assembly fullname="H.NotifyIcon" action="copy" />
+  <assembly fullname="LiteRP" action="copy" />
+  <assembly fullname="LiteRP.Core" action="copy" />
+  <assembly fullname="LiteRP.WebApp" action="copy" />
+  <assembly fullname="OllamaSharp" action="copy" />
+  <assembly fullname="Microsoft.AspNetCore.Components.Endpoints" action="copy" />
+  <assembly fullname="Microsoft.AspNetCore.Components.Server" action="copy" />
+</linker>

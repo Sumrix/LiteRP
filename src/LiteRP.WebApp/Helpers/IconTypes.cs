@@ -6,24 +6,28 @@ namespace LiteRP.WebApp.Helpers;
 public class IconTypes
 {
     public static readonly Type DotsVertical = typeof(DotsVerticalIcon);
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UploadSolidIcon))]
     public static readonly Type UploadSolid = typeof(UploadSolidIcon);
-    public static readonly Type Sort = typeof(SortIcon);
-    public static readonly Type ArrowSortLetters = typeof(ArrowSortLettersIcon);
-    public static readonly Type ChevronDown = typeof(ChevronDownIcon);
     public static readonly Type Blocks = typeof(BlocksIcon);
-    public static readonly Type Grid = typeof(GridIcon);
-    public static readonly Type List = typeof(ListIcon);
-    public static readonly Type Info = typeof(InfoCircleIcon);
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(TrashBinIcon))]
     public static readonly Type TrashBin = typeof(TrashBinIcon);
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PaperPlaneIcon))]
     public static readonly Type PaperPlane = typeof(PaperPlaneIcon);
-    public static readonly Type ServerSolid = typeof(ServerSolidIcon);
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(QuestionCircleSolidIcon))]
     public static readonly Type QuestionCircleSolid = typeof(QuestionCircleSolidIcon);
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(SidenavIcon))]
     public static readonly Type Sidenav = typeof(SidenavIcon);
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CloseIcon))]
     public static readonly Type Close = typeof(CloseIcon);
-    public static readonly Type AngleDown = typeof(AngleDownIcon);
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(EyeSolidIcon))]
     public static readonly Type EyeSolid = typeof(EyeSolidIcon);
     public static readonly Type InfoCircleSolid = typeof(InfoCircleSolidIcon);
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(StopSolidIcon))]
     public static readonly Type StopSolid = typeof(StopSolidIcon);
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MessageDotsSolidIcon))]
     public static readonly Type MessageDotsSolid = typeof(MessageDotsSolidIcon);
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ProfileCardSolidIcon))]
     public static readonly Type ProfileCardSolid = typeof(ProfileCardSolidIcon);
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(InfoCircleIcon))]
+    public static readonly Type InfoCircle = typeof(InfoCircleIcon);
 }

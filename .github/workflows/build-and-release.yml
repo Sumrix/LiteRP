@@ -63,9 +63,8 @@ jobs:
         -o ./publish
         -p:AssemblyVersion=${{ steps.version.outputs.numeric }}
         -p:Version=${{ steps.version.outputs.semver }}
-        -p:PublishSingleFile=true
-        -p:PublishTrimmed=false
-        -p:SelfContained=true
+        -p:DebugType=none
+        -p:DebuggerSupport=false
         
     - name: Compress artefact
       run: 7z a LiteRP-${{ matrix.rid }}.zip ./publish/*

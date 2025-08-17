@@ -1,5 +1,5 @@
 ﻿@inherits FlowbiteComponentBase
 
 <LrpTooltip Text="@Content" Placement="@Position">
-    <Icon Type="@Icon" Class="@GetClasses()" />
+    <DynamicComponent Type="@Icon" Parameters="@(new Dictionary<string, object>{{"class", GetClasses()}})" />
 </LrpTooltip>

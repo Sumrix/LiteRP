@@ -1,4 +1,5 @@
-﻿using LiteRP.WebApp.Components.Atoms.Button;
+﻿using System.Diagnostics.CodeAnalysis;
+using LiteRP.WebApp.Components.Atoms.Button;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -33,6 +34,7 @@ public partial class LrpToggleItem<TValue>
     /// The icon to display in the button.
     /// </summary>
     [Parameter]
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     public Type? Icon { get; set; }
     [Parameter] public bool Disabled { get; set; }
 
