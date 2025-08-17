@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel;
-using Flowbite.Base;
+using LiteRP.WebApp.Components.Flowbite;
 using LiteRP.WebApp.Components.Molecules;
 using LiteRP.WebApp.Utilities;
 using Microsoft.AspNetCore.Components;

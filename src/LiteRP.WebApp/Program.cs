@@ -4,7 +4,7 @@ using LiteRP.Core.Models;
 using LiteRP.Core.Services;
 using LiteRP.Core.Services.Interfaces;
 using LiteRP.WebApp.Components;
-using LiteRP.WebApp.Helpers;
+using LiteRP.WebApp.Components.Flowbite;
 using LiteRP.WebApp.Services;
 using Serilog;
 

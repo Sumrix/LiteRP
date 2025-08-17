@@ -1,5 +1,4 @@
-﻿using Flowbite.Icons;
-using Flowbite.Icons.Extended;
+﻿using System.Diagnostics.CodeAnalysis;
 using LiteRP.WebApp.Components.Icons;
 
 namespace LiteRP.WebApp.Helpers;

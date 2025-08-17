@@ -1,0 +1,8 @@
+@namespace LiteRP.WebApp.Components.Flowbite
+
+<div class="@PositionClasses">
+    @foreach (var toast in _activeToasts)
+    {
+        <Toast @key="toast.Id" ToastMessage="@toast" OnClose="@(() => HandleToastClose(toast.Id))" />
+    }
+</div>

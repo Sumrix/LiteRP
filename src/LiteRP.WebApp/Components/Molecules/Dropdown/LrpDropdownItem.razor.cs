@@ -1,4 +1,4 @@
-﻿using Flowbite.Base;
+﻿using LiteRP.WebApp.Components.Flowbite;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
