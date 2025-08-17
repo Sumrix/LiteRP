@@ -5,6 +5,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+
+    <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <ScopedCssEnabled>false</ScopedCssEnabled>
   </PropertyGroup>
 
   <PropertyGroup Label="Tailwind Properties">
@@ -14,8 +18,16 @@
     <TailwindInstallPath>$(BaseIntermediateOutputPath)\tailwind-cli\</TailwindInstallPath>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <PublishReadyToRun>false</PublishReadyToRun>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Markdig" Version="0.41.3" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.8" />
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageReference Include="Tailwind.MSBuild" Version="1.1.0">
       <PrivateAssets>all</PrivateAssets>
@@ -32,29 +44,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <UpToDateCheckBuilt Include="wwwroot\css\app.css" Set="Css" />
-    <UpToDateCheckBuilt Include="wwwroot\css\app.min.css" Set="Css" />
-    <UpToDateCheckBuilt Include="Properties\tailwind.config.js" Set="Css" />
+    <Content Remove="wwwroot\**\*" />
+    <None Remove="wwwroot\**\*" />
+    <EmbeddedResource Include="wwwroot\**\*" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="wwwroot\css\app.css" />
-    <None Remove="wwwroot\css\app.min.css" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Resources\SharedResources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SharedResources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Resources\SharedResources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>SharedResources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <Content Update="appsettings*.json" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+    <None Remove="appsettings*.json" />
+    <EmbeddedResource Include="appsettings.json" LogicalName="LiteRP.WebApp.appsettings.json" />
   </ItemGroup>
 
 </Project>

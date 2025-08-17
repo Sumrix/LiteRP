@@ -1,4 +1,4 @@
-﻿using Flowbite.Services;
+﻿using System.Reflection;
 using LiteRP.Core.Helpers;
 using LiteRP.Core.Models;
 using LiteRP.Core.Services;
@@ -6,6 +6,8 @@ using LiteRP.Core.Services.Interfaces;
 using LiteRP.WebApp.Components;
 using LiteRP.WebApp.Components.Flowbite;
 using LiteRP.WebApp.Services;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Net.Http.Headers;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -15,7 +17,22 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     var assembly = Assembly.GetExecutingAssembly();
+
+    IConfiguration embeddedConfig;
+    await using (var cfgStream = assembly.GetManifestResourceStream("LiteRP.WebApp.appsettings.json"))
+    {
+        if (cfgStream is null)
+            throw new InvalidOperationException("Embedded appsettings.json not found.");
+
+        embeddedConfig = new ConfigurationBuilder()
+            .AddJsonStream(cfgStream)
+            .AddEnvironmentVariables()
+            .Build();
+    }
+
     var builder = WebApplication.CreateBuilder(args);
+    builder.Configuration.Sources.Clear();
+    builder.Configuration.AddConfiguration(embeddedConfig);
 
     Log.Logger = new LoggerConfiguration()
         .ReadFrom.Configuration(builder.Configuration)
@@ -71,6 +88,10 @@ try
     }
 
     var provider = new ManifestEmbeddedFileProvider(assembly, "wwwroot");
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = provider
+    });
 
     app.UseStatusCodePagesWithReExecute("/not-found");
 
@@ -78,7 +99,6 @@ try
 
     app.UseAntiforgery();
 
-    app.MapStaticAssets();
     app.MapControllers();
     app.MapRazorComponents<App>()
         .AddInteractiveServerRenderMode();
