@@ -42,7 +42,7 @@ public class CharacterService : ICharacterService
             try
             {
                 var json = await File.ReadAllTextAsync(file);
-                var character = JsonSerializer.Deserialize<Character>(json);
+                var character = JsonSerializer.Deserialize<Character>(json, JsonHelper.Context.Character);
                 if (character != null)
                 {
                     characters.Add(character);
@@ -66,13 +66,13 @@ public class CharacterService : ICharacterService
         }
         
         var json = await File.ReadAllTextAsync(filePath);
-        return JsonSerializer.Deserialize<Character>(json);
+        return JsonSerializer.Deserialize<Character>(json, JsonHelper.Context.Character);
     }
 
     public async Task SaveCharacterAsync(Character character)
     {
         var filePath = PathManager.GetCharacterFilePath(character.Id);
-        var json = JsonSerializer.Serialize(character, JsonHelper.SerializerOptions);
+        var json = JsonSerializer.Serialize(character, JsonHelper.Context.Character);
         await File.WriteAllTextAsync(filePath, json);
     }
     
@@ -142,7 +142,7 @@ public class CharacterService : ICharacterService
         // At first try V2
         try
         {
-            var cardV2 = JsonSerializer.Deserialize<TavernCardV2>(jsonString);
+            var cardV2 = JsonSerializer.Deserialize<TavernCardV2>(jsonString, JsonHelper.Context.TavernCardV2);
             if (cardV2?.Data != null && !string.IsNullOrWhiteSpace(cardV2.Data.Name))
             {
                 return ToDomainModels(cardV2);
@@ -153,7 +153,7 @@ public class CharacterService : ICharacterService
         // If not V2, then try V1
         try
         {
-            var cardV1 = JsonSerializer.Deserialize<TavernCardV1>(jsonString);
+            var cardV1 = JsonSerializer.Deserialize<TavernCardV1>(jsonString, JsonHelper.Context.TavernCardV1);
             if (!string.IsNullOrWhiteSpace(cardV1?.Name))
             {
                 return (ToDomainModel(cardV1), null);

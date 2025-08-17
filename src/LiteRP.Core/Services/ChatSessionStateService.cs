@@ -43,7 +43,7 @@ public class ChatSessionStateService : IChatSessionStateService
         List<ChatMessage> chatMessages;
         try
         {
-            chatMessages = JsonSerializer.Deserialize<List<ChatMessage>>(json)!;
+            chatMessages = JsonSerializer.Deserialize<List<ChatMessage>>(json, JsonHelper.Context.ListChatMessage)!;
         }
         catch (Exception e)
         {
@@ -67,7 +67,7 @@ public class ChatSessionStateService : IChatSessionStateService
     {
         // Save messages
         var filePath = PathManager.GetChatSessionFilePath(session.Id);
-        var json = JsonSerializer.Serialize(session.Messages, JsonHelper.SerializerOptions);
+        var json = JsonSerializer.Serialize(session.Messages, JsonHelper.Context.ListChatMessage);
         await File.WriteAllTextAsync(filePath, json);
 
         // Update metadata in index
@@ -116,7 +116,7 @@ public class ChatSessionStateService : IChatSessionStateService
         var json = await File.ReadAllTextAsync(PathManager.GetChatSessionIndexFilePath);
         try
         {
-            return JsonSerializer.Deserialize<ChatSessionIndex>(json) ?? new ChatSessionIndex();
+            return JsonSerializer.Deserialize<ChatSessionIndex>(json, JsonHelper.Context.ChatSessionIndex) ?? new ChatSessionIndex();
         }
         catch (Exception e)
         {
@@ -127,7 +127,7 @@ public class ChatSessionStateService : IChatSessionStateService
 
     private async Task SaveIndexAsync(ChatSessionIndex index)
     {
-        var json = JsonSerializer.Serialize(index, JsonHelper.SerializerOptions);
+        var json = JsonSerializer.Serialize(index, JsonHelper.Context.ChatSessionIndex);
         await File.WriteAllTextAsync(PathManager.GetChatSessionIndexFilePath, json);
     }
 }

@@ -6,7 +6,7 @@ namespace LiteRP.Core.Models.CharacterCard;
 /// <summary>
 /// Defines the insertion position for a CharacterBook entry relative to the character's main definitions.
 /// </summary>
-[JsonConverter(typeof(JsonStringEnumConverter))]
+[JsonConverter(typeof(JsonStringEnumConverter<CardPosition>))]
 public enum CardPosition
 {
     /// <summary>

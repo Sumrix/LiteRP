@@ -111,12 +111,12 @@ public partial class Chat : IAsyncDisposable
     }
 
     [JSInvokable]
-    public async Task OnSubmitFromJs()
+    public void OnSubmitFromJs()
     {
-        await SendMessage();
+        SendMessage();
     }
 
-    private async Task SendMessage()
+    private void SendMessage()
     {
         if (!CanSendMessage) return;
 
@@ -125,20 +125,45 @@ public partial class Chat : IAsyncDisposable
         _userInput = "";
 
         var aiResponseViewModel = PrepareUIForNewMessage(userMessage);
+
+        _ = Task.Run(async () => await StreamAndDisplayAiResponseAsync(userMessage, aiResponseViewModel));
+    }
+
+    private async Task StreamAndDisplayAiResponseAsync(string userMessage, ChatMessageViewModel aiResponseViewModel)
+    {
         var wasMessagePopulated = false;
 
         try
         {
-            wasMessagePopulated =
-                await StreamAndDisplayAiResponseAsync(userMessage, aiResponseViewModel, _messageGenerationCts.Token);
+            var stream = _chatSession.GetStreamingResponseAsync(userMessage, _messageGenerationCts.Token);
+
+            await foreach (var chunk in stream)
+            {
+                if (!wasMessagePopulated)
+                {
+                    wasMessagePopulated = true;
+                }
+                
+                await InvokeAsync(() =>
+                {
+                    if (aiResponseViewModel.Mode == MessageDisplayMode.Thinking)
+                        aiResponseViewModel.Mode = MessageDisplayMode.Streaming;
+
+                    aiResponseViewModel.MessageText += chunk;
+                    StateHasChanged();
+                });
+            }
         }
         catch (ChatSessionException ex)
         {
-            _chatMessageViewModels.Remove(aiResponseViewModel);
-            var errorMessage = GetUserFriendlyErrorMessage(ex.ErrorCode);
-            Logger.LogError(ex, "ChatSessionException: {ErrorMessage}", errorMessage);
+            await InvokeAsync(() =>
+            {
+                _chatMessageViewModels.Remove(aiResponseViewModel);
+                var errorMessage = GetUserFriendlyErrorMessage(ex.ErrorCode);
+                Logger.LogError(ex, "ChatSessionException: {ErrorMessage}", errorMessage);
+                ToastService.ShowError(errorMessage, 10000);
+            });
             await OllamaStatusService.TriggerCheckAsync();
-            ToastService.ShowError(errorMessage, 10000);
         }
         catch (OperationCanceledException)
         {
@@ -146,31 +171,40 @@ public partial class Chat : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            _chatMessageViewModels.Remove(aiResponseViewModel);
-            const string errorMessage = "An unexpected error occurred. Please try again later.";
-            Logger.LogError(ex, "UnexpectedException: {ErrorMessage}", errorMessage);
-            ToastService.ShowError(errorMessage, 10000);
+            await InvokeAsync(() =>
+            {
+                _chatMessageViewModels.Remove(aiResponseViewModel);
+                const string errorMessage = "An unexpected error occurred. Please try again later.";
+                Logger.LogError(ex, "UnexpectedException: {ErrorMessage}", errorMessage);
+                ToastService.ShowError(errorMessage, 10000);
+            });
         }
         finally
         {
-            // If the operation was cancelled BUT no content was ever received, remove the placeholder.
-            if (!wasMessagePopulated)
-            {
-                _chatMessageViewModels.Remove(aiResponseViewModel);
-            }
-            else
+            if (wasMessagePopulated)
             {
                 await ChatSessionService.SaveSessionAsync(_chatSession);
-        
-                if (ChatSessionId == null)
-                {
-                    Nav.NavigateTo($"/chat/{_chatSession.Id}", replace: true);
-                }
             }
-            
-            aiResponseViewModel.Mode = MessageDisplayMode.Ready;
-            _isAiResponding = false;
-            StateHasChanged();
+
+            await InvokeAsync(() =>
+            {
+                // If the operation was cancelled BUT no content was ever received, remove the placeholder.
+                if (!wasMessagePopulated)
+                {
+                    _chatMessageViewModels.Remove(aiResponseViewModel);
+                }
+                else
+                {
+                    if (ChatSessionId == null)
+                    {
+                        Nav.NavigateTo($"/chat/{_chatSession.Id}", replace: true);
+                    }
+                }
+                
+                aiResponseViewModel.Mode = MessageDisplayMode.Ready;
+                _isAiResponding = false;
+                StateHasChanged();
+            });
         }
     }
 
@@ -192,30 +226,6 @@ public partial class Chat : IAsyncDisposable
         return aiResponseViewModel;
     }
 
-    private async Task<bool> StreamAndDisplayAiResponseAsync(string userMessage, ChatMessageViewModel aiResponseViewModel, CancellationToken token)
-    {
-        var stream = _chatSession.GetStreamingResponseAsync(userMessage, token);
-        var hasReceivedAnyChunks = false;
-
-        await foreach (var chunk in stream)
-        {
-            if (aiResponseViewModel.Mode == MessageDisplayMode.Thinking)
-                aiResponseViewModel.Mode = MessageDisplayMode.Streaming;
-
-            // As soon as we get the first chunk, set the flag.
-            if (!hasReceivedAnyChunks)
-            {
-                hasReceivedAnyChunks = true;
-            }
-
-            aiResponseViewModel.MessageText += chunk;
-            StateHasChanged();
-        }
-
-        // Return true if we added any content to the message.
-        return hasReceivedAnyChunks;
-    }
-
     private void StopResponding()
     {
         _messageGenerationCts.Cancel();
@@ -235,7 +245,14 @@ public partial class Chat : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await JS.InvokeVoidAsync("LiteRP.autoScroll.stop");
+        try
+        {
+            await JS.InvokeVoidAsync("LiteRP.autoScroll.stop");
+        }
+        catch (JSDisconnectedException)
+        {
+            // We don't care
+        }
 
         await _messageGenerationCts.CancelAsync();
         _messageGenerationCts.Dispose();

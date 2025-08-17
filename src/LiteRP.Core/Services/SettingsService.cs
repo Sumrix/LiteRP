@@ -31,7 +31,7 @@ public class SettingsService : ISettingsService
         try
         {
             var json = await File.ReadAllTextAsync(PathManager.SettingsFilePath);
-            _cachedSettings = JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
+            _cachedSettings = JsonSerializer.Deserialize<AppSettings>(json, JsonHelper.Context.AppSettings) ?? new AppSettings();
             return _cachedSettings.Clone();
         }
         catch (Exception)
@@ -43,7 +43,7 @@ public class SettingsService : ISettingsService
 
     public async Task SaveSettingsAsync(AppSettings settings)
     {
-        var json = JsonSerializer.Serialize(settings, JsonHelper.SerializerOptions);
+        var json = JsonSerializer.Serialize(settings, JsonHelper.Context.AppSettings);
         await File.WriteAllTextAsync(PathManager.SettingsFilePath, json);
 
         _cachedSettings = settings;

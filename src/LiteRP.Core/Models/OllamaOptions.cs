@@ -2,5 +2,5 @@
 
 public class OllamaOptions
 {
-    public int ConnectionCheckIntervalSec { get; init; } = 30;
+    public int ConnectionCheckIntervalSec { get; init; } = 10;
 }

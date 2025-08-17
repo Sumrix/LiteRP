@@ -13,7 +13,7 @@
 
 <div class="max-w-3xl mx-auto" style="flex-direction: column-reverse;">
     
-    <div id="chat-container" class="d-flex flex-column flex-grow-1 space-y-3 pb-32" style="overflow-y: auto;">
+    <div id="chat-container" class="d-flex flex-column flex-grow-1 space-y-3 pb-56" style="overflow-y: auto;">
         @foreach (var message in _chatMessageViewModels)
         {
             <ChatMessageView ChatMessage="message" />
@@ -24,7 +24,7 @@
     
         @if (!_isAiConnected)
         {
-            <LrpAlert Color="AlertColor.Danger" Class="mb-2">
+            <LrpAlert Color="AlertColor.Danger" Class="mb-2 shadow-lg" ShowBorder>
                 <HeaderContent>
                     Could not connect to the AI server. Please check your settings and ensure the server is running.
                 </HeaderContent>
@@ -34,12 +34,12 @@
             <LrpInput TValue="string"
                       id="@InputId"
                       @bind-Value="_userInput"
-                      Placeholder="Write a message.."
+                      Placeholder="Type a message… (Enter to send, Shift+Enter for newline)"
                       Lines="1"
                       MaxLines="20"
                       AutoGrow
                       Variant="LrpInputVariant.White"
-                      InputClass="chat-input"/>
+                      InputClass="chat-input shadow-lg"/>
             @if (_isAiResponding)
             {
                 <LrpButton Icon="IconTypes.StopSolid" Class="absolute bottom-3.5 right-3" OnClick="StopResponding"/>

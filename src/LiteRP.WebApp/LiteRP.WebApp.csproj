@@ -4,19 +4,25 @@
     <TargetFrameworks>net9.0;net9.0-windows</TargetFrameworks>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+
+    <Product>LiteRP</Product>
+    <Company>Sumrix</Company>
+    <AssemblyTitle>LiteRP - Lightweight AI Roleplay Client</AssemblyTitle>
+    <CurrentYear>$([System.DateTime]::UtcNow.ToString("yyyy"))</CurrentYear>
+    <Copyright>© $(CurrentYear) Sumrix</Copyright>
+    <AssemblyName>LiteRP</AssemblyName>
     <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
+
+    <TailwindVersion>v3.4.17</TailwindVersion>
+    <TailwindInputFile>$(MSBuildProjectDirectory)\wwwroot\css\app.css</TailwindInputFile>
+    <TailwindOutputFile>$(MSBuildProjectDirectory)\wwwroot\css\app.min.css</TailwindOutputFile>
+    <TailwindInstallPath>$(BaseIntermediateOutputPath)tailwind-cli\</TailwindInstallPath>
+
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
 
     <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <ScopedCssEnabled>false</ScopedCssEnabled>
-  </PropertyGroup>
-
-  <PropertyGroup Label="Tailwind Properties">
-    <TailwindVersion>v3.4.17</TailwindVersion>
-    <TailwindInputFile>..\wwwroot\css\app.css</TailwindInputFile>
-    <TailwindOutputFile>..\wwwroot\css\app.min.css</TailwindOutputFile>
-    <TailwindInstallPath>$(BaseIntermediateOutputPath)\tailwind-cli\</TailwindInstallPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0-windows'">

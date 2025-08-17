@@ -77,7 +77,7 @@ public class OllamaStatusService : IDisposable
         _timer = null;
         _logger.LogInformation("Ollama status monitoring stopped.");
     }
-    
+
     public async Task TriggerCheckAsync()
     {
         _appSettings = await _settingsService.GetSettingsAsync();
@@ -99,7 +99,7 @@ public class OllamaStatusService : IDisposable
         }
         catch (HttpRequestException e)
         {
-            _logger.LogError("Couldn't connect to Ollama ({url}): '{message}'. Status Code: {status}.",
+            _logger.LogWarning("Couldn't connect to Ollama ({url}): '{message}'. Status Code: {status}.",
                 _appSettings.OllamaUrl, e.Message, e.StatusCode);
             SetStatus(ConnectionStatus.Failed);
         }

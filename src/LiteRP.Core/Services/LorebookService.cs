@@ -19,7 +19,7 @@ public class LorebookService : ILorebookService
         foreach (var file in lorebookFiles)
         {
             var json = await File.ReadAllTextAsync(file);
-            var lorebook = JsonSerializer.Deserialize<Lorebook>(json, JsonHelper.SerializerOptions);
+            var lorebook = JsonSerializer.Deserialize<Lorebook>(json, JsonHelper.Context.Lorebook);
             if (lorebook != null)
             {
                 lorebooks.Add(lorebook);
@@ -38,13 +38,13 @@ public class LorebookService : ILorebookService
         }
 
         var json = await File.ReadAllTextAsync(filePath);
-        return JsonSerializer.Deserialize<Lorebook>(json, JsonHelper.SerializerOptions);
+        return JsonSerializer.Deserialize<Lorebook>(json, JsonHelper.Context.Lorebook);
     }
 
     public async Task SaveLorebookAsync(Lorebook lorebook)
     {
         var filePath = PathManager.GetLorebookFilePath(lorebook.Id);
-        var json = JsonSerializer.Serialize(lorebook, JsonHelper.SerializerOptions);
+        var json = JsonSerializer.Serialize(lorebook, JsonHelper.Context.Lorebook);
         await File.WriteAllTextAsync(filePath, json);
     }
 

@@ -4,11 +4,17 @@ using System.Text.Unicode;
 
 namespace LiteRP.Core.Helpers;
 
-public static class JsonHelper
+internal static class JsonHelper
 {
-    public static readonly JsonSerializerOptions SerializerOptions = new()
+    internal static readonly JsonSerializerOptions SerializerOptions = new()
     {
         WriteIndented = true,
         Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
     };
+
+    internal static readonly AppJsonContext Context = new(
+        new JsonSerializerOptions
+        {
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+        });
 }
