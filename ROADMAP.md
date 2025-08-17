@@ -26,9 +26,8 @@ Feature-complete for public testing
 - [x] Smart chat auto-scroll
 - [x] Automatic settings saving
 - [x] Character information view
-- [ ] Compact single executable
+- [x] Compact single executable
 - [ ] Hide server in system tray
-- [ ] Add code signing for release builds
 
 ## v0.4 — Polished Beta
 Quality of life improvements
@@ -70,3 +69,4 @@ Competitive feature parity with other AI frontends
 - [ ] Standalone installers (Windows/macOS/iOS/Android)
 - [ ] Public website and documentation
 - [ ] Image generation support
+- [ ] Add code signing for release builds
