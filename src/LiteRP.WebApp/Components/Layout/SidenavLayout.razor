@@ -1,6 +1,5 @@
 ﻿@using LiteRP.WebApp.Components.Icons
 @using LiteRP.WebApp.Components.Organisms.SidenavComponent
-@inject IStringLocalizer<SharedResources> L
 @inject IChatSessionService ChatSessionService
 @inject ICharacterService CharacterService
 @inject ILogger<SidenavLayout> Logger
@@ -21,10 +20,10 @@
             <SidenavItem Href="/alerts" Text="Alerts" /> *@
         </SidenavGroup>
 
-        <SidenavGroup Title="@L["Chats"]" IsTopBordered="true">
+        <SidenavGroup Title="Chats" IsTopBordered="true">
             @if (_displayedChats is null)
             {
-                <p class="px-2 text-gray-400">@L["Loading chats..."]</p>
+                <p class="px-2 text-gray-400">Loading chats...</p>
             }
             else
             {
@@ -43,7 +42,7 @@
                     <li class="px-2">
                         <button @onclick="LoadMoreChats"
                                 class="w-full p-2 text-sm text-primary-600 dark:text-primary-500 hover:underline">
-                            @L["Load More"]
+                            Load More
                         </button>
                     </li>
                 }

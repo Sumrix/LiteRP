@@ -14,6 +14,7 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
+    var assembly = Assembly.GetExecutingAssembly();
     var builder = WebApplication.CreateBuilder(args);
 
     Log.Logger = new LoggerConfiguration()
@@ -32,7 +33,6 @@ try
     builder.Services.AddRazorComponents()
         .AddInteractiveServerComponents();
 
-    builder.Services.AddLocalizationServices(builder.Configuration);
 
     builder.Services.AddControllers(); 
 
@@ -60,9 +60,6 @@ try
         options.AddPolicy("AvatarPolicy", policy =>
             policy.SetVaryByQuery("v", "dpr").Expire(TimeSpan.FromDays(365)));
     });
-
-    builder.Services.AddLocalization();
-    
     builder.Services.AddHostedService<StartupHostedService>();
 
     var app = builder.Build();
@@ -73,7 +70,7 @@ try
         app.UseExceptionHandler("/Error", createScopeForErrors: true);
     }
 
-    app.UseRequestLocalization();
+    var provider = new ManifestEmbeddedFileProvider(assembly, "wwwroot");
 
     app.UseStatusCodePagesWithReExecute("/not-found");
 

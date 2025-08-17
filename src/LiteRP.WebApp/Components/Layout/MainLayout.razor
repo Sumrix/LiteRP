@@ -1,12 +1,11 @@
 @inherits LayoutComponentBase
-@inject IStringLocalizer<SharedResources> L
 
 <div class="antialiased bg-gray-50 dark:bg-gray-900 h-dvh flex flex-col overflow-hidden">
     <Navbar Class="md:hidden">
         <div class="flex items-center gap-2">
             <LrpButton OnClick="@_sidenav.ToggleDrawerAsync"
                       aria-controls="@_sidenav.Id"
-                      title="@L["Open sidebar"]"
+                      title="Open sidebar"
                       Variant="LrpButtonStyle.Ghost"
                       Color="LrpButtonColor.Grey"
                       Icon="IconTypes.Sidenav"
@@ -29,8 +28,8 @@
 <ToastHost />
 
 <div id="blazor-error-ui" data-nosnippet>
-    @L["An unhandled error has occurred."]
-    <a href="." class="reload">@L["Reload"]</a>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
 
