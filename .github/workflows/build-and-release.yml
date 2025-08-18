@@ -24,10 +24,13 @@ jobs:
         include:
           - os: windows-latest
             rid: win-x64
+            tfm: net9.0-windows
           - os: ubuntu-latest
             rid: linux-x64
-          # - os: macos-latest
-          #   rid: osx-x64
+            tfm: net9.0
+          - os: macos-latest
+            rid: osx-x64
+            tfm: net9.0
 
     steps:
     - name: Parse version
@@ -55,10 +58,19 @@ jobs:
         path: src/LiteRP.WebApp/obj/tailwind-cli
         key: tailwind-cli-v3.4.17-${{ runner.os }}
         
+    # Build once to let Tailwind generate app.min.css,
+    # then publish (which rebuilds + packages, now with the CSS embedded)
+    - name: Build
+      run: >
+        dotnet build src/LiteRP.WebApp/LiteRP.WebApp.csproj
+        -c ${{ env.CONFIGURATION }}
+        -f ${{ matrix.tfm }}
+        
     - name: Publish
       run: >
         dotnet publish src/LiteRP.WebApp/LiteRP.WebApp.csproj
         -c ${{ env.CONFIGURATION }}
+        -f ${{ matrix.tfm }}
         -r ${{ matrix.rid }}
         -o ./publish
         -p:AssemblyVersion=${{ steps.version.outputs.numeric }}
@@ -66,15 +78,34 @@ jobs:
         -p:DebugType=none
         -p:DebuggerSupport=false
         
-    - name: Compress artefact
-      run: 7z a LiteRP-${{ matrix.rid }}.zip ./publish/*
-    
-    - name: Upload artefact
+    - name: Rename artifact (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        $exe = Get-ChildItem -Path publish -Filter *.exe | Select-Object -First 1
+        if (-not $exe) { throw "No .exe produced in ./publish" }
+        Move-Item $exe.FullName "LiteRP-${{ matrix.rid }}.exe"
+
+    - name: Rename artifact (Linux/macOS)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        BIN=$(find publish -maxdepth 1 -type f -perm -111 | head -n1)
+        if [ -z "$BIN" ]; then
+          BIN=$(find publish -maxdepth 1 -type f | head -n1)
+        fi
+        [ -z "$BIN" ] && { echo "No binary produced in ./publish"; exit 1; }
+        mv "$BIN" "LiteRP-${{ matrix.rid }}"
+        chmod +x "LiteRP-${{ matrix.rid }}"
+
+    - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: binaries-${{ matrix.rid }}
-        path: LiteRP-${{ matrix.rid }}.zip
-  
+        path: |
+          LiteRP-${{ matrix.rid }}*
+        if-no-files-found: error
+
   release:
     name: Draft GitHub Release
     needs: build
@@ -94,7 +125,7 @@ jobs:
         env:
           OUTPUT: CHANGELOG.md
           GITHUB_REPO: ${{ github.repository }}
-          
+
       - uses: actions/download-artifact@v4
         with:
           path: ./artifacts
@@ -107,4 +138,4 @@ jobs:
           draft: false
           prerelease: ${{ contains(github.ref, '-') }}
           body_path: CHANGELOG.md
-          files: artifacts/*/*.zip
+          files: artifacts/*/*
