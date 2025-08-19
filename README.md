@@ -1,28 +1,46 @@
-﻿# LiteRP
-> Lightweight LLM frontend for roleplay—Blazor Server, zero install, just run.
+﻿<div align="center">
+  <img src="./.github/assets/logo.png" alt="LiteRP Logo" width="300"/>
+</div>
 
-⚠️ **v0.2 Alpha** – “Basic Functionality”, ~100 MB, not yet a single file.
+<p align="center">
+  Minimal web client for chatting and roleplay with AI characters
+</p>
 
-### Key features
-- Configure **Ollama** URL & model
-- **Characters page**: import/delete TavernAI v2 `.png` cards
-- **Chat** with character context (`description` + `first_mes`)
+<p align="center">
+  <a href="./SCREENSHOTS.md">
+    <img src="./.github/assets/screenshots/chat-light.png" alt="Chat screenshot" width="650"/>
+  </a><br/>
+  <sub>Chat page (light mode) – see more in the <a href="./SCREENSHOTS.md">Screenshots Gallery</a></sub>
+</p>
 
-See the [ROADMAP](./ROADMAP.md) for what’s coming next.
+## Features
+- Ollama backend support (other APIs and backends planned)
+- TavernAI v2 character cards
+- No external dependencies like Python
+- Single compact executable (~17 MB)
 
-## Quick start
-1. Download the [latest release](https://github.com/Sumrix/LiteRP/releases/latest).
-2. Extract the folder.
-3. Run `LiteRP.exe`.  
-   • On first run Windows may warn about an unknown publisher – that’ll disappear once code‑signing lands in v0.3.
-4. Your default browser should open automatically at <http://localhost:5000>.  
-   If it doesn’t, open that URL manually.
-5. Open settings page and configure Ollama URL and model name, then save.
+The app is under active development.  
+Current version: **v0.3 Early Beta**.  
+See the [ROADMAP](./ROADMAP.md) for upcoming features.
 
-> Ollama must be running locally (or reachable via URL) and the model you choose must be pulled beforehand.
+## Quick Start
+- Download the executable for your platform from the [latest release](https://github.com/Sumrix/LiteRP/releases/latest).  
+- Run it.  
+>If you see warnings, choose *Run anyway*. This is a beta release, such warnings may appear.
 
 ## Contributing
-Issues and PRs welcome. Please check the [ROADMAP](./ROADMAP.md) first.
+Issues and PRs are welcome.  
+Please check the [ROADMAP](./ROADMAP.md) before opening feature requests.
 
 ## License
 [MIT](./LICENSE.txt)
+
+## Acknowledgment
+LiteRP uses or includes code from the following open source projects:
+
+- [Flowbite Blazor](https://github.com/themesberg/flowbite-blazor) – UI components (MIT)
+- [Markdig](https://github.com/xoofx/markdig) – Markdown processor (BSD-2-Clause)
+- [Serilog](https://github.com/serilog/serilog) – Logging library (Apache-2.0)
+- [Tailwind.MSBuild](https://github.com/MJRasicci/Tailwind.MSBuild) – Tailwind CSS build integration (MIT)
+- [git-cliff-action](https://github.com/orhun/git-cliff-action) – Changelog generation (GPL-3.0)
+- [action-gh-release](https://github.com/softprops/action-gh-release) – GitHub Releases publishing (MIT)
