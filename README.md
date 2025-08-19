@@ -25,11 +25,6 @@ See the [ROADMAP](./ROADMAP.md) for upcoming features.
 
 ## Quick Start
 - Download the executable for your platform from the [latest release](https://github.com/Sumrix/LiteRP/releases/latest).  
-- Run it.  
->If you see warnings, choose *Run anyway*. This is a beta release, such warnings may appear.
-
-## Quick Start
-- Download the executable for your platform from the [latest release](https://github.com/Sumrix/LiteRP/releases/latest).  
 - **Windows**: run `LiteRP-win-x64.exe`.  
   If you see a warning about an unknown publisher, click *Run anyway*.  
 - **Linux/macOS**: before first run, make the file executable:  
