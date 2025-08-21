@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using LiteRP.Core.Entities;
 using LiteRP.Core.Models;
@@ -77,8 +78,29 @@ public class ChatSessionService : IChatSessionService
         OnChange?.Invoke();
     }
 
+    public async Task DeleteCharacterSessions(Guid characterId)
+    {
+        var allSessionMetadata = await _chatSessionStateService.GetAllSessionMetadataAsync();
+        
+        foreach (var sessionMetadata in allSessionMetadata)
+        {
+            if (sessionMetadata.CharacterId == characterId)
+                await _chatSessionStateService.DeleteChatSessionAsync(sessionMetadata.Id);
+        }
+
+        if (NewSession?.CharacterId == characterId)
+        {
+            NewSession = null;
+        }
+        OnChange?.Invoke();
+    }
+
     public async Task<List<ChatSessionMetadata>> GetSessionMetadataListAsync(int skip, int take)
     {
-        return await _chatSessionStateService.GetSessionMetadataListAsync(skip, take);
+        return (await _chatSessionStateService.GetAllSessionMetadataAsync())
+            .OrderByDescending(s => s.LastModified)
+            .Skip(skip)
+            .Take(take)
+            .ToList();
     }
 }

@@ -116,6 +116,7 @@ public partial class Characters
     
     private async Task DeleteCharacter(Character character)
     {
+        await ChatSessionService.DeleteCharacterSessions(character.Id);
         await CharacterService.DeleteCharacterAsync(character.Id);
         _characters!.Remove(character);
     }

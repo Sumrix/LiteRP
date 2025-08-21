@@ -7,7 +7,7 @@ namespace LiteRP.Core.Services.Interfaces;
 
 public interface IChatSessionStateService
 {
-    Task<List<ChatSessionMetadata>> GetSessionMetadataListAsync(int skip, int take);
+    Task<List<ChatSessionMetadata>> GetAllSessionMetadataAsync();
     Task<ChatSessionState?> GetSessionAsync(Guid id);
     Task SaveSessionAsync(ChatSessionState session);
     Task DeleteChatSessionAsync(Guid id);

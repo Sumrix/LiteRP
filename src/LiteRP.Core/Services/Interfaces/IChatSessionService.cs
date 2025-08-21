@@ -16,5 +16,6 @@ public interface IChatSessionService
     Task<ChatSession?> LoadSessionAsync(Guid id);
     Task SaveSessionAsync(ChatSession session);
     Task DeleteSessionAsync(Guid id);
+    Task DeleteCharacterSessions(Guid characterId);
     Task<List<ChatSessionMetadata>> GetSessionMetadataListAsync(int skip, int take);
 }

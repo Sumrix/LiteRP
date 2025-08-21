@@ -20,14 +20,10 @@ public class ChatSessionStateService : IChatSessionStateService
         _logger = logger;
     }
 
-    public async Task<List<ChatSessionMetadata>> GetSessionMetadataListAsync(int skip, int take)
+    public async Task<List<ChatSessionMetadata>> GetAllSessionMetadataAsync()
     {
         var index = await GetIndexAsync();
-        return index.Sessions.Values
-            .OrderByDescending(s => s.LastModified)
-            .Skip(skip)
-            .Take(take)
-            .ToList();
+        return index.Sessions.Values.ToList();
     }
 
     public async Task<ChatSessionState?> GetSessionAsync(Guid id)
